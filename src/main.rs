@@ -42,6 +42,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .merge(routes::users::routes())
+        .merge(routes::rooms::routes())
         .layer(Extension(db_pool))
         .layer(cors)
         .layer(GovernorLayer::new(governor_conf));

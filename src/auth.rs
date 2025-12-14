@@ -5,12 +5,13 @@ use password_hash::SaltString;
 use password_hash::rand_core::OsRng;
 
 use axum::http::StatusCode;
+use uuid::Uuid;
 
 const DEFAULT_SECRET_KEY: &str = "43aaf85b92f1ae6fbcef7732c50a0904";
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Claims {
-    pub sub: i32, // user_id
+    pub sub: Uuid,
     pub exp: usize,
 }
 
@@ -34,14 +35,14 @@ pub fn verify_password(hash: &str, password: &str) -> bool {
     }
 }
 
-pub fn create_jwt(user_id: i32) -> Result<String, String> {
+pub fn create_jwt(user_uuid: Uuid) -> Result<String, String> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::minutes(15))
         .expect("valid timestamp")
         .timestamp();
 
     let claims = Claims {
-        sub: user_id,
+        sub: user_uuid,
         exp: expiration as usize,
     };
 

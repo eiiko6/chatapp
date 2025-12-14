@@ -1,19 +1,10 @@
-# quick rust platform
-
-## Setup
-
-Change the project's name in all files in one command:
-
-```sh
-./init.sh new_name
-```
+# Chat App
 
 ## Configuration
 
-- Specify the JWT secret with the `_JWT_SECRET` environment variable.
-- Specify the server's port with the `_PORT` environment variable. Defaults to `8080`.
-- To enable user registration, pass in `_ALLOW_REGISTRATION=true`.
-- `_DATA_DIR=/var/lib/-server/` will set the location for the hosted files to `/var/lib/-server/`.
+- Specify the JWT secret with the `CHATAPP_JWT_SECRET` environment variable.
+- Specify the server's port with the `CHATAPP_PORT` environment variable. Defaults to `8080`.
+- To enable user registration, pass in `CHATAPP_ALLOW_REGISTRATION=true`.
 
 ## Development
 

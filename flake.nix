@@ -16,7 +16,7 @@
         openssl = pkgs.openssl;
       in {
         packages.default = pkgs.rustPlatform.buildRustPackage {
-          pname = "-server";
+          pname = "chatapp";
           version = "0.1.0";
 
           src = ./.;

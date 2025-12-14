@@ -4,6 +4,7 @@ use axum::{
 };
 use sqlx::PgPool;
 use std::env;
+use uuid::Uuid;
 use validator::ValidateEmail;
 
 use crate::auth::{create_jwt, hash_password, verify_password};
@@ -12,7 +13,7 @@ const DUMMY_HASH: &str = "$argon2id$v=19$m=4096,t=3,p=1$YWFhYWFhYWFhYWFhYWFhYQ$a
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct User {
-    pub id: i32,
+    pub uuid: Uuid,
     pub username: String,
     pub password_hash: String,
     pub email: String,
@@ -26,8 +27,7 @@ pub struct LoginPayload {
 
 #[derive(serde::Serialize)]
 pub struct LoginResponse {
-    pub id: i32,
-    pub email: String,
+    pub uuid: Uuid,
     pub token: String,
 }
 
@@ -58,28 +58,29 @@ pub async fn login(
     Extension(db): Extension<PgPool>,
     Json(payload): Json<LoginPayload>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
-    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
-        .bind(&payload.email)
-        .fetch_optional(&db)
-        .await
-        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".into()))?;
+    let user = sqlx::query_as::<_, User>(
+        "SELECT uuid, email, username, password_hash FROM user_ WHERE email = $1",
+    )
+    .bind(&payload.email)
+    .fetch_optional(&db)
+    .await
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".into()))?;
 
-    let (user_id, password_hash) = if let Some(u) = user {
-        (u.id, u.password_hash)
+    let (user_uuid, password_hash) = if let Some(u) = user {
+        (u.uuid, u.password_hash)
     } else {
         // timing shield
-        (0, DUMMY_HASH.to_string())
+        (uuid::Uuid::now_v7(), DUMMY_HASH.to_string())
     };
 
-    if !verify_password(&password_hash, &payload.password) || user_id == 0 {
+    if !verify_password(&password_hash, &payload.password) {
         return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".into()));
     }
 
-    let token = create_jwt(user_id).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    let token = create_jwt(user_uuid).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
 
     Ok(Json(LoginResponse {
-        id: user_id,
-        email: payload.email,
+        uuid: user_uuid,
         token,
     }))
 }
@@ -109,15 +110,17 @@ pub async fn register_user(
     let password_hash =
         hash_password(&payload.password).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
 
-    let user_id: i32 = sqlx::query_scalar(
-        "INSERT INTO users (username, email, password_hash)
-     VALUES ($1, $2, $3)
-     RETURNING id",
+    let user_uuid = uuid::Uuid::now_v7();
+
+    sqlx::query(
+        "INSERT INTO user_ (uuid, username, email, password_hash)
+         VALUES ($1, $2, $3, $4)",
     )
+    .bind(user_uuid)
     .bind(&payload.username)
     .bind(&payload.email)
     .bind(&password_hash)
-    .fetch_one(&db)
+    .execute(&db)
     .await
     .map_err(|e| {
         if let Some(db_err) = e.as_database_error() {
@@ -131,13 +134,12 @@ pub async fn register_user(
         (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
 
-    let token = create_jwt(user_id).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    let token = create_jwt(user_uuid).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
 
     Ok((
         StatusCode::CREATED,
         Json(LoginResponse {
-            id: user_id,
-            email: payload.email,
+            uuid: user_uuid,
             token,
         }),
     ))
