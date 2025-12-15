@@ -1,15 +1,11 @@
 # Chat App
 
-## Configuration
-
-- Specify the JWT secret with the `CHATAPP_JWT_SECRET` environment variable.
-- Specify the server's port with the `CHATAPP_PORT` environment variable. Defaults to `8080`.
-- To enable user registration, pass in `CHATAPP_ALLOW_REGISTRATION=true`.
-
 ## Development
 
-You can use this to setup the database:
+Frontend: [frontend/README.md](./frontend/README.md)
+Backend: [backend/README.md](./backend/README.md)
 
+You can use this to setup the database required by the backend:
 ```sh
 ./run_db.sh
 ```
