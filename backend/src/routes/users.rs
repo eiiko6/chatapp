@@ -1,13 +1,17 @@
 use axum::{
-    Extension, Json, Router, extract::Request, http::StatusCode, middleware::Next,
-    response::Response, routing::post,
+    Extension, Json, Router,
+    extract::Request,
+    http::{HeaderMap, StatusCode},
+    middleware::Next,
+    response::Response,
+    routing::{get, post},
 };
 use sqlx::PgPool;
 use std::env;
 use uuid::Uuid;
 use validator::ValidateEmail;
 
-use crate::auth::{create_jwt, hash_password, verify_password};
+use crate::auth::{create_jwt, hash_password, verify_jwt, verify_password};
 
 const DUMMY_HASH: &str = "$argon2id$v=19$m=4096,t=3,p=1$YWFhYWFhYWFhYWFhYWFhYQ$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
@@ -42,6 +46,7 @@ pub fn routes() -> Router {
     Router::new()
         .route("/login", post(login))
         .route("/register", post(register_user))
+        .route("/validate-token", get(validate_token))
         .layer(axum::middleware::from_fn(registration_guard))
 }
 
@@ -143,4 +148,9 @@ pub async fn register_user(
             token,
         }),
     ))
+}
+
+async fn validate_token(headers: HeaderMap) -> Result<String, (StatusCode, String)> {
+    let _ = verify_jwt(headers)?;
+    Ok(String::from("OK"))
 }
