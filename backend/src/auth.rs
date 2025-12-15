@@ -37,7 +37,7 @@ pub fn verify_password(hash: &str, password: &str) -> bool {
 
 pub fn create_jwt(user_uuid: Uuid) -> Result<String, String> {
     let expiration = Utc::now()
-        .checked_add_signed(Duration::minutes(15))
+        .checked_add_signed(Duration::days(100))
         .expect("valid timestamp")
         .timestamp();
 

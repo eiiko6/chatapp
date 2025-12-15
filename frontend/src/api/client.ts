@@ -1,12 +1,12 @@
-import { useAuthStore } from '../stores/auth'
+import { initAuth } from '../stores/auth.ts'
 
-const BASE_URL = 'http://localhost:8080'
+const BASE_URL = 'http://192.168.1.183:8081'
 
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const auth = useAuthStore()
+  const auth = await initAuth()
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,

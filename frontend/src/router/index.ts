@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { initAuth } from '../stores/auth.ts'
 
 import LoginPage from '../pages/LoginPage.vue'
 import RoomsPage from '../pages/RoomsPage.vue'
@@ -14,8 +14,8 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
-  const auth = useAuthStore()
+router.beforeEach(async (to) => {
+  const auth = await initAuth()
   if (!auth.isAuthenticated && to.path !== '/login') {
     return '/login'
   }

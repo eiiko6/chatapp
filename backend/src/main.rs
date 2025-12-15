@@ -24,8 +24,8 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
     let governor_conf = GovernorConfigBuilder::default()
-        .per_second(10)
-        .burst_size(20)
+        .per_second(25)
+        .burst_size(50)
         .finish()
         .unwrap();
 

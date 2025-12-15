@@ -5,8 +5,9 @@ defineProps<{ messages: Message[] }>()
 
 <template>
   <ul>
-    <li v-for="(m, i) in messages" :key="i">
-      <strong>{{ m.sender }}:</strong> {{ m.content }}
+    <li v-for="(m, i) in messages" :key="i" class="message">
+      <div class="sender">{{ m.sender }}</div>
+      <div class="message-content">{{ m.content }}</div>
     </li>
   </ul>
 </template>
@@ -16,16 +17,22 @@ ul {
   padding: 0;
   margin: 0;
   list-style: none;
-  word-wrap: break-word;
 }
 
-li {
-  white-space: pre-wrap;
+.message {
+  margin-bottom: 1rem;
+}
+
+.sender {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
 }
 
 .message-content {
-  display: inline-block;
+  padding-left: 1rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
   max-width: 100%;
-  word-break: break-word;
+  display: block;
 }
 </style>

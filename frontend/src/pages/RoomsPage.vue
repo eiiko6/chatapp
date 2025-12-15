@@ -17,14 +17,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useAuthStore } from '../stores/auth'
+import { initAuth } from '../stores/auth.ts'
 import { fetchRooms } from '../api/rooms'
 import type { Room } from '../types/api'
 
-const auth = useAuthStore()
 const rooms = ref<Room[]>([])
 
 onMounted(async () => {
+  const auth = await initAuth()
   rooms.value = await fetchRooms(auth.uuid!)
 })
 </script>

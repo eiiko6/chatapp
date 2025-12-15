@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAuthStore } from "../stores/auth";
+import { login } from '../stores/auth.ts'
 import { useRouter } from "vue-router";
 
 const email = ref("");
-const username = ref("");
 const password = ref("");
+const errorMessage = ref("");
 
-const auth = useAuthStore();
 const router = useRouter();
 
 async function submit() {
-  await auth.login(email.value, username.value, password.value);
-  router.push("/");
+  errorMessage.value = "";
+  try {
+    await login(email.value, "", password.value);
+    router.push("/");
+  } catch (err: any) {
+    errorMessage.value = err?.message || "An unknown error occurred";
+  }
 }
 </script>
 
@@ -25,6 +29,8 @@ async function submit() {
       <input v-model="password" type="password" placeholder="password" />
 
       <button type="submit">Login</button>
+
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </form>
   </div>
 </template>
@@ -54,5 +60,12 @@ async function submit() {
   font-weight: 600;
   margin-bottom: 0.5rem;
   text-align: center;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 0.5rem;
 }
 </style>

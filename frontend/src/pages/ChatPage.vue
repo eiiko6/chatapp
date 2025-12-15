@@ -50,9 +50,8 @@ function scrollToBottom() {
 .chat-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  max-width: 720px;
-  margin: 0 auto;
+  height: 95%;
+  width: 90%;
   padding: 15px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
