@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { initAuth } from '../stores/auth.ts'
+import { initAuth, validateToken } from '../stores/auth.ts'
 
 import LoginPage from '../pages/LoginPage.vue'
 import RoomsPage from '../pages/RoomsPage.vue'
@@ -16,8 +16,14 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = await initAuth()
+
   if (!auth.isAuthenticated && to.path !== '/login') {
     return '/login'
+  }
+
+  if (auth.isAuthenticated) {
+    const valid = await validateToken()
+    if (!valid) return '/login'
   }
 })
 

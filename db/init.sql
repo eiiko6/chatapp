@@ -23,6 +23,22 @@ CREATE TABLE IF NOT EXISTS message_ (
   id BIGSERIAL PRIMARY KEY,
   sender INT REFERENCES user_(id) NOT NULL,
   room INT REFERENCES room_(id) NOT NULL,
-  type VARCHAR(32) NOT NULL,
-  content TEXT NOT NULL
+  message_type VARCHAR(32) NOT NULL,
+  content TEXT NOT NULL,
+  sent_at TIMESTAMP
 );
+
+-- Message timestamp creation
+CREATE OR REPLACE FUNCTION create_message_timestamp()
+RETURNS trigger
+AS $$
+BEGIN
+  NEW.sent_at := CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER insert_message
+BEFORE INSERT ON message_
+FOR EACH ROW
+EXECUTE FUNCTION create_message_timestamp();

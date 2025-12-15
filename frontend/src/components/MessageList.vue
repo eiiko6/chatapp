@@ -6,7 +6,7 @@ defineProps<{ messages: Message[] }>()
 <template>
   <ul>
     <li v-for="(m, i) in messages" :key="i" class="message">
-      <div class="sender">{{ m.sender }}</div>
+      <div class="sender">{{ m.sender }} <span class="timestamp">{{ m.sent_at }}</span></div>
       <div class="message-content">{{ m.content }}</div>
     </li>
   </ul>
@@ -20,12 +20,23 @@ ul {
 }
 
 .message {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: var(--radius);
 }
 
 .sender {
   font-weight: bold;
+  font-size: 1.1rem;
   margin-bottom: 0.25rem;
+}
+
+.sender .timestamp {
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
 }
 
 .message-content {

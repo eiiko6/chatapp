@@ -13,5 +13,6 @@ export interface Message {
   sender: string
   message_type: 'text'
   content: string
+  sent_at: string
 }
 

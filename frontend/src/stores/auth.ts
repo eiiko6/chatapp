@@ -6,7 +6,7 @@ let store: Store | null = null
 
 async function getStore() {
   if (!store) {
-    store = await load('store.json', { autoSave: false })
+    store = await load('store.json')
   }
   return store
 }
@@ -39,3 +39,21 @@ export async function logout() {
   await s.save()
   return { token: null, uuid: null, isAuthenticated: false }
 }
+
+export async function validateToken(): Promise<boolean> {
+  const auth = await initAuth()
+  if (!auth.token) return false
+
+  try {
+    await apiFetch('/validate-token', {
+      method: 'GET',
+    })
+    return true
+  } catch (e) {
+    console.log(e);
+
+    await logout()
+    return false
+  }
+}
+

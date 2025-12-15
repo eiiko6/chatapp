@@ -11,10 +11,19 @@ use crate::db::{user_id_from_uuid, username_from_uuid};
 use crate::{auth::verify_jwt, db::room_id_from_uuid};
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
+pub struct MessageRow {
+    pub sender: String,
+    pub message_type: String,
+    pub content: String,
+    pub sent_at: chrono::NaiveDateTime,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Debug)]
 pub struct Message {
     pub sender: String,
     pub message_type: String,
     pub content: String,
+    pub sent_at: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -54,13 +63,14 @@ async fn list_messages(
         ));
     }
 
-    let messages = sqlx::query_as::<_, Message>(
+    let messages = sqlx::query_as::<_, MessageRow>(
         r#"
     SELECT
         u.username AS sender,
         r.uuid AS room,
-        m.type AS message_type,
-        m.content
+        m.message_type,
+        m.content,
+        m.sent_at
     FROM message_ m
     JOIN user_ u ON u.id = m.sender
     JOIN room_ r ON r.id = m.room
@@ -79,6 +89,16 @@ async fn list_messages(
         )
     })?;
 
+    let messages: Vec<Message> = messages
+        .into_iter()
+        .map(|m| Message {
+            sender: m.sender,
+            message_type: m.message_type,
+            content: m.content,
+            sent_at: m.sent_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+        })
+        .collect();
+
     Ok(Json(messages))
 }
 
@@ -94,17 +114,22 @@ async fn create_message(
 
     let room_id = room_id_from_uuid(&db, room_uuid).await?;
 
-    sqlx::query(
-        "INSERT INTO message_ (sender, room, type, content)
-        VALUES ($1, $2, $3, $4)",
+    let sent_at: chrono::NaiveDateTime = sqlx::query_scalar(
+        "INSERT INTO message_ (sender, room, message_type, content)
+        VALUES ($1, $2, $3, $4) RETURNING sent_at",
     )
     .bind(user_id)
     .bind(room_id)
     .bind(&payload.message_type)
     .bind(&payload.content)
-    .execute(&db)
+    .fetch_one(&db)
     .await
-    .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create message")))?;
+    .map_err(|e| {
+        (
+            StatusCode::BAD_REQUEST,
+            format!("Could not create message: {e}"),
+        )
+    })?;
 
     let sender_name = username_from_uuid(&db, claims.sub).await?;
 
@@ -114,6 +139,7 @@ async fn create_message(
             sender: sender_name,
             message_type: payload.message_type,
             content: payload.content,
+            sent_at: sent_at.format("%Y-%m-%d %H:%M:%S").to_string(),
         }),
     ))
 }

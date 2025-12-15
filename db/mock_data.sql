@@ -15,7 +15,7 @@ INSERT INTO membership_ (user_id, room) VALUES
 (3, 1),  -- Carol in General Discussion
 (1, 3);  -- Alice in Random Memes
 
-INSERT INTO message_ (sender, room, type, content) VALUES
+INSERT INTO message_ (sender, room, message_type, content) VALUES
 (1, 1, 'text', 'Hey everyone, hows it going?'),
 (2, 1, 'text', 'All good! Just trying to get through some work.'),
 (3, 1, 'text', 'Hello! How are you guys?'),

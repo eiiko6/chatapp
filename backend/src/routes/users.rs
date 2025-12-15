@@ -150,7 +150,9 @@ pub async fn register_user(
     ))
 }
 
-async fn validate_token(headers: HeaderMap) -> Result<String, (StatusCode, String)> {
+async fn validate_token(
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let _ = verify_jwt(headers)?;
-    Ok(String::from("OK"))
+    Ok(Json(serde_json::json!({"valid": true})))
 }

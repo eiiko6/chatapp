@@ -1,6 +1,6 @@
 import { initAuth } from '../stores/auth.ts'
 
-const BASE_URL = 'http://192.168.1.183:8081'
+const BASE_URL = 'http://localhost:8080'
 
 export async function apiFetch<T>(
   path: string,
