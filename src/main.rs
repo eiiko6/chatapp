@@ -15,7 +15,8 @@ async fn main() -> anyhow::Result<()> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
-    let db_pool = db::init_db().await;
+    tracing::info!("Connecting to database...");
+    let db_pool = db::init_db().await?;
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -43,6 +44,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .merge(routes::users::routes())
         .merge(routes::rooms::routes())
+        .merge(routes::messages::routes())
         .layer(Extension(db_pool))
         .layer(cors)
         .layer(GovernorLayer::new(governor_conf));

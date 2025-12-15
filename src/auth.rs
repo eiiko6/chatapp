@@ -4,7 +4,7 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode}
 use password_hash::SaltString;
 use password_hash::rand_core::OsRng;
 
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
 use uuid::Uuid;
 
 const DEFAULT_SECRET_KEY: &str = "43aaf85b92f1ae6fbcef7732c50a0904";
@@ -57,7 +57,13 @@ pub fn create_jwt(user_uuid: Uuid) -> Result<String, String> {
     .map_err(|_| "Token creation failed".into())
 }
 
-pub fn verify_jwt(token: &str) -> Result<Claims, (StatusCode, String)> {
+pub fn verify_jwt(headers: HeaderMap) -> Result<Claims, (StatusCode, String)> {
+    let token = headers
+        .get("Authorization")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.strip_prefix("Bearer "))
+        .ok_or((StatusCode::UNAUTHORIZED, "Missing token".to_string()))?;
+
     let secret =
         std::env::var("CHATAPP_JWT_SECRET").unwrap_or_else(|_| DEFAULT_SECRET_KEY.to_string());
 

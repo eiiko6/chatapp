@@ -34,13 +34,7 @@ async fn list_rooms(
     headers: HeaderMap,
     Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Room>>, (StatusCode, String)> {
-    let token = headers
-        .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "))
-        .ok_or((StatusCode::UNAUTHORIZED, "Missing token".to_string()))?;
-
-    let claims = verify_jwt(token)?;
+    let claims = verify_jwt(headers)?;
     if claims.sub != user_uuid {
         return Err((StatusCode::FORBIDDEN, "Forbidden".to_string()));
     }
@@ -64,14 +58,7 @@ async fn create_room(
     headers: HeaderMap,
     Json(payload): Json<NewRoomPayload>,
 ) -> Result<(StatusCode, Json<Room>), (StatusCode, String)> {
-    let token = headers
-        .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "))
-        .ok_or((StatusCode::UNAUTHORIZED, "Missing token".to_string()))?;
-
-    // Verify auth
-    let claims = verify_jwt(token)?;
+    let claims = verify_jwt(headers)?;
 
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
 
@@ -103,14 +90,7 @@ async fn get_room(
     headers: HeaderMap,
     Extension(db): Extension<PgPool>,
 ) -> Result<Json<Room>, (StatusCode, String)> {
-    let token = headers
-        .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "))
-        .ok_or((StatusCode::UNAUTHORIZED, "Missing token".to_string()))?;
-
-    // Verify auth
-    let claims = verify_jwt(token)?;
+    let claims = verify_jwt(headers)?;
     if claims.sub != user_uuid {
         return Err((StatusCode::FORBIDDEN, "Forbidden".to_string()));
     }
