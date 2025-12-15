@@ -23,3 +23,14 @@ pub async fn room_id_from_uuid(db: &PgPool, room_uuid: Uuid) -> Result<i32, (Sta
         // FIX: hmm probably the wrong error here
         .map_err(|_| (StatusCode::UNAUTHORIZED, String::from("Wrong token")))
 }
+
+pub async fn username_from_uuid(
+    db: &PgPool,
+    user_uuid: Uuid,
+) -> Result<String, (StatusCode, String)> {
+    sqlx::query_scalar("SELECT username FROM user_ WHERE uuid = $1")
+        .bind(user_uuid)
+        .fetch_one(db)
+        .await
+        .map_err(|_| (StatusCode::UNAUTHORIZED, String::from("Wrong token")))
+}

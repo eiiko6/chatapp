@@ -7,12 +7,12 @@ use axum::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db::user_id_from_uuid;
+use crate::db::{user_id_from_uuid, username_from_uuid};
 use crate::{auth::verify_jwt, db::room_id_from_uuid};
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
 pub struct Message {
-    pub sender: Uuid,
+    pub sender: String,
     pub message_type: String,
     pub content: String,
 }
@@ -57,7 +57,7 @@ async fn list_messages(
     let messages = sqlx::query_as::<_, Message>(
         r#"
     SELECT
-        u.uuid AS sender,
+        u.username AS sender,
         r.uuid AS room,
         m.type AS message_type,
         m.content
@@ -106,10 +106,12 @@ async fn create_message(
     .await
     .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create message")))?;
 
+    let sender_name = username_from_uuid(&db, claims.sub).await?;
+
     Ok((
         StatusCode::CREATED,
         Json(Message {
-            sender: claims.sub,
+            sender: sender_name,
             message_type: payload.message_type,
             content: payload.content,
         }),

@@ -7,8 +7,8 @@ use axum::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::auth::verify_jwt;
 use crate::db::user_id_from_uuid;
+use crate::{auth::verify_jwt, db::room_id_from_uuid};
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Room {
@@ -74,6 +74,15 @@ async fn create_room(
     .execute(&db)
     .await
     .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create room")))?;
+
+    let room_id = room_id_from_uuid(&db, room_uuid).await?;
+
+    sqlx::query("INSERT INTO membership_ (user_id, room) VALUES ($1, $2)")
+        .bind(user_id)
+        .bind(room_id)
+        .execute(&db)
+        .await
+        .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create room")))?;
 
     Ok((
         StatusCode::CREATED,
