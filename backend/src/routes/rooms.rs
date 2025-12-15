@@ -41,14 +41,19 @@ async fn list_rooms(
 
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
 
-    let rooms = sqlx::query_as::<_, Room>("SELECT uuid, owner, name FROM room_ WHERE owner = $1")
-        .bind(user_id)
-        .fetch_all(&db)
-        .await
-        .unwrap_or_else(|e| {
-            tracing::error!("faied to list rooms: {e}");
-            Vec::new()
-        });
+    let rooms = sqlx::query_as::<_, Room>(
+        r#"
+        SELECT uuid, owner, name FROM room_ r
+        JOIN membership_ m ON m.user_id = $1 AND m.room = r.id
+        "#,
+    )
+    .bind(user_id)
+    .fetch_all(&db)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("faied to list rooms: {e}");
+        Vec::new()
+    });
 
     Ok(Json(rooms))
 }

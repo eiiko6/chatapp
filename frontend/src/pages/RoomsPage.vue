@@ -12,14 +12,19 @@
         </router-link>
       </li>
     </ul>
+
+    <button class="logout" @click="logout()">Logout</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { initAuth } from '../stores/auth.ts'
+import { useRouter } from 'vue-router'
+import { initAuth, logout as authLogout } from '../stores/auth.ts'
 import { fetchRooms } from '../api/rooms'
 import type { Room } from '../types/api'
+
+const router = useRouter()
 
 const rooms = ref<Room[]>([])
 
@@ -27,6 +32,11 @@ onMounted(async () => {
   const auth = await initAuth()
   rooms.value = await fetchRooms(auth.uuid!)
 })
+
+function logout() {
+  authLogout()
+  router.push('/login')
+}
 </script>
 
 <script lang="ts">
@@ -79,5 +89,12 @@ export default { components: { CreateRoomForm } }
 
 .room-link:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.logout {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 30px;
 }
 </style>
