@@ -1,6 +1,5 @@
 import { initAuth } from '../stores/auth.ts'
-
-const BASE_URL = 'http://localhost:8080'
+import { API } from '../main.ts'
 
 export async function apiFetch<T>(
   path: string,
@@ -8,7 +7,7 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const auth = await initAuth()
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${API}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

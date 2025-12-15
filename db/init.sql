@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS message_ (
   sent_at TIMESTAMP
 );
 
+CREATE TABLE ws_token_ (
+    token TEXT PRIMARY KEY,
+    room_id INT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL
+);
+
 -- Message timestamp creation
 CREATE OR REPLACE FUNCTION create_message_timestamp()
 RETURNS trigger

@@ -15,3 +15,7 @@ export function sendMessage(roomUuid: string, content: string) {
   })
 }
 
+export async function getWsToken(roomUuid: string): Promise<string> {
+  const data = await apiFetch<{ token: string }>(`/ws/issue-token/rooms/${roomUuid}`);
+  return data.token;
+}

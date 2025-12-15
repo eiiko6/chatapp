@@ -7,8 +7,11 @@ use axum::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db::{user_id_from_uuid, username_from_uuid};
 use crate::{auth::verify_jwt, db::room_id_from_uuid};
+use crate::{
+    db::{user_id_from_uuid, username_from_uuid},
+    realtime::Realtime,
+};
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
 pub struct MessageRow {
@@ -18,7 +21,7 @@ pub struct MessageRow {
     pub sent_at: chrono::NaiveDateTime,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, Debug)]
+#[derive(sqlx::FromRow, serde::Serialize, Debug, Clone)]
 pub struct Message {
     pub sender: String,
     pub message_type: String,
@@ -105,6 +108,7 @@ async fn list_messages(
 async fn create_message(
     Path(room_uuid): Path<Uuid>,
     Extension(db): Extension<PgPool>,
+    Extension(realtime): Extension<Realtime>,
     headers: HeaderMap,
     Json(payload): Json<NewMessagePayload>,
 ) -> Result<(StatusCode, Json<Message>), (StatusCode, String)> {
@@ -133,13 +137,15 @@ async fn create_message(
 
     let sender_name = username_from_uuid(&db, claims.sub).await?;
 
-    Ok((
-        StatusCode::CREATED,
-        Json(Message {
-            sender: sender_name,
-            message_type: payload.message_type,
-            content: payload.content,
-            sent_at: sent_at.format("%Y-%m-%d %H:%M:%S").to_string(),
-        }),
-    ))
+    let message = Message {
+        sender: sender_name,
+        message_type: payload.message_type,
+        content: payload.content,
+        sent_at: sent_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    };
+
+    let rt_sender = realtime.sender_for(room_id);
+    let _ = rt_sender.send(message.clone());
+
+    Ok((StatusCode::CREATED, Json(message)))
 }

@@ -8,6 +8,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 mod auth;
 mod db;
+mod realtime;
 mod routes;
 
 #[tokio::main]
@@ -24,8 +25,8 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
     let governor_conf = GovernorConfigBuilder::default()
-        .per_second(25)
-        .burst_size(50)
+        .per_second(50)
+        .burst_size(200)
         .finish()
         .unwrap();
 
@@ -41,11 +42,15 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
+    let realtime = realtime::Realtime::new();
+
     let app = Router::new()
         .merge(routes::users::routes())
         .merge(routes::rooms::routes())
         .merge(routes::messages::routes())
+        .merge(routes::ws::routes())
         .layer(Extension(db_pool))
+        .layer(Extension(realtime))
         .layer(cors)
         .layer(GovernorLayer::new(governor_conf));
 
