@@ -14,6 +14,7 @@ use uuid::Uuid;
 
 use crate::auth::{create_jwt, verify_jwt};
 use crate::db::user_id_from_uuid;
+use crate::routes::rooms::is_member;
 use crate::{db::room_id_from_uuid, realtime::Realtime};
 
 #[derive(sqlx::FromRow, serde::Serialize, Deserialize)]
@@ -37,15 +38,7 @@ pub async fn issue_ws_token(
     let room_id = room_id_from_uuid(&db, room_uuid).await?;
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
 
-    let membership: Vec<i32> =
-        sqlx::query_scalar("SELECT user_id FROM membership_ WHERE user_id = $1 AND room = $2")
-            .bind(user_id)
-            .bind(room_id)
-            .fetch_all(&db)
-            .await
-            .unwrap_or_else(|_| Vec::new());
-
-    if membership.is_empty() {
+    if !is_member(user_id, room_id, &db).await {
         return Err((
             StatusCode::UNAUTHORIZED,
             String::from("You are not a member of this room"),
@@ -70,11 +63,10 @@ pub async fn issue_ws_token(
     .bind(room_id)
     .execute(&db)
     .await
-    .map_err(|e| {
-        tracing::error!("failed to insert ws token: {e}");
+    .map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("failed to insert ws token: {e}"),
+            format!("failed to provide ws token"),
         )
     })?;
 

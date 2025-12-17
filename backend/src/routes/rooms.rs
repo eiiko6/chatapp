@@ -4,7 +4,7 @@ use axum::{
     http::{HeaderMap, StatusCode},
     routing::{get, post},
 };
-use sqlx::PgPool;
+use sqlx::{PgPool, Pool, Postgres};
 use uuid::Uuid;
 
 use crate::db::user_id_from_uuid;
@@ -20,13 +20,35 @@ pub struct Room {
 #[derive(serde::Deserialize)]
 pub struct NewRoomPayload {
     pub name: String,
+    pub global: bool,
 }
 
 pub fn routes() -> Router {
     Router::new()
         .route("/rooms/{user_uuid}", get(list_rooms))
         .route("/rooms", post(create_room))
-        .route("/rooms/{user_uuid}/{room_id}", get(get_room))
+    // .route("/rooms/{user_uuid}/{room_id}", get(get_room))
+}
+
+pub async fn is_member(user_id: i32, room_id: i32, db: &Pool<Postgres>) -> bool {
+    sqlx::query_scalar(
+        r#"
+        SELECT r.global
+            OR EXISTS (
+                SELECT 1
+                FROM membership_ m
+                WHERE m.user_id = $1
+                  AND m.room = r.id
+            )
+        FROM room_ r
+        WHERE r.id = $2
+        "#,
+    )
+    .bind(user_id)
+    .bind(room_id)
+    .fetch_one(db)
+    .await
+    .unwrap_or(false)
 }
 
 async fn list_rooms(
@@ -43,17 +65,19 @@ async fn list_rooms(
 
     let rooms = sqlx::query_as::<_, Room>(
         r#"
-        SELECT uuid, owner, name FROM room_ r
-        JOIN membership_ m ON m.user_id = $1 AND m.room = r.id
+        SELECT r.uuid, r.owner, r.name
+        FROM room_ r
+        WHERE r.global OR EXISTS (
+            SELECT 1
+            FROM membership_ m
+            WHERE m.user_id = $1 AND m.room = r.id
+        )
         "#,
     )
     .bind(user_id)
     .fetch_all(&db)
     .await
-    .unwrap_or_else(|e| {
-        tracing::error!("faied to list rooms: {e}");
-        Vec::new()
-    });
+    .unwrap_or_else(|_| Vec::new());
 
     Ok(Json(rooms))
 }
@@ -70,18 +94,20 @@ async fn create_room(
     let room_uuid = uuid::Uuid::now_v7();
 
     sqlx::query(
-        "INSERT INTO room_ (uuid, owner, name)
-        VALUES ($1, $2, $3)",
+        "INSERT INTO room_ (uuid, owner, name, global)
+        VALUES ($1, $2, $3, $4)",
     )
     .bind(room_uuid)
     .bind(user_id)
     .bind(&payload.name)
+    .bind(&payload.global)
     .execute(&db)
     .await
     .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create room")))?;
 
     let room_id = room_id_from_uuid(&db, room_uuid).await?;
 
+    // We do this even for the owner
     sqlx::query("INSERT INTO membership_ (user_id, room) VALUES ($1, $2)")
         .bind(user_id)
         .bind(room_id)
@@ -99,29 +125,29 @@ async fn create_room(
     ))
 }
 
-async fn get_room(
-    Path((user_uuid, room_uuid)): Path<(Uuid, Uuid)>,
-    headers: HeaderMap,
-    Extension(db): Extension<PgPool>,
-) -> Result<Json<Room>, (StatusCode, String)> {
-    let claims = verify_jwt(headers)?;
-    if claims.sub != user_uuid {
-        return Err((StatusCode::FORBIDDEN, "Forbidden".to_string()));
-    }
-
-    let user_id = user_id_from_uuid(&db, user_uuid).await?;
-
-    let room: Room =
-        sqlx::query_as("SELECT uuid, owner, name FROM room_ WHERE uuid = $1 AND owner = $2")
-            .bind(room_uuid)
-            .bind(user_id)
-            .fetch_one(&db)
-            .await
-            .map_err(|_| (StatusCode::NOT_FOUND, "Room not found".to_string()))?;
-
-    Ok(Json(Room {
-        uuid: room_uuid,
-        owner: room.owner,
-        name: room.name,
-    }))
-}
+// async fn get_room(
+//     Path((user_uuid, room_uuid)): Path<(Uuid, Uuid)>,
+//     headers: HeaderMap,
+//     Extension(db): Extension<PgPool>,
+// ) -> Result<Json<Room>, (StatusCode, String)> {
+//     let claims = verify_jwt(headers)?;
+//     if claims.sub != user_uuid {
+//         return Err((StatusCode::FORBIDDEN, "Forbidden".to_string()));
+//     }
+//
+//     let user_id = user_id_from_uuid(&db, user_uuid).await?;
+//
+//     let room: Room =
+//         sqlx::query_as("SELECT uuid, owner, name FROM room_ WHERE uuid = $1 AND owner = $2")
+//             .bind(room_uuid)
+//             .bind(user_id)
+//             .fetch_one(&db)
+//             .await
+//             .map_err(|_| (StatusCode::NOT_FOUND, "Room not found".to_string()))?;
+//
+//     Ok(Json(Room {
+//         uuid: room_uuid,
+//         owner: room.owner,
+//         name: room.name,
+//     }))
+// }

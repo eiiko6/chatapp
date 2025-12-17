@@ -7,7 +7,7 @@ use axum::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{auth::verify_jwt, db::room_id_from_uuid};
+use crate::{auth::verify_jwt, db::room_id_from_uuid, routes::rooms::is_member};
 use crate::{
     db::{user_id_from_uuid, username_from_uuid},
     realtime::Realtime,
@@ -51,15 +51,7 @@ async fn list_messages(
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
     let room_id = room_id_from_uuid(&db, room_uuid).await?;
 
-    let membership: Vec<i32> =
-        sqlx::query_scalar("SELECT user_id FROM membership_ WHERE user_id = $1 AND room = $2")
-            .bind(user_id)
-            .bind(room_id)
-            .fetch_all(&db)
-            .await
-            .unwrap_or_else(|_| Vec::new());
-
-    if membership.is_empty() {
+    if !is_member(user_id, room_id, &db).await {
         return Err((
             StatusCode::UNAUTHORIZED,
             String::from("You are not a member of this room"),
@@ -115,8 +107,14 @@ async fn create_message(
     let claims = verify_jwt(headers)?;
 
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
-
     let room_id = room_id_from_uuid(&db, room_uuid).await?;
+
+    if !is_member(user_id, room_id, &db).await {
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            String::from("You are not a member of this room"),
+        ));
+    }
 
     let sent_at: chrono::NaiveDateTime = sqlx::query_scalar(
         "INSERT INTO message_ (sender, room, message_type, content)

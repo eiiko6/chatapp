@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS room_ (
     id SERIAL PRIMARY KEY,
     uuid UUID UNIQUE,
     owner INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    global BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS membership_ (
