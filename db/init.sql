@@ -1,17 +1,32 @@
 CREATE TABLE IF NOT EXISTS user_ (
-    id SERIAL PRIMARY KEY,
-    uuid UUID UNIQUE,
-    email TEXT UNIQUE,
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL
+  id SERIAL PRIMARY KEY,
+  uuid UUID UNIQUE,
+  email TEXT UNIQUE,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS friendship_ (
+  user_first  INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
+  user_second INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_first, user_second),
+);
+
+CREATE TABLE IF NOT EXISTS friend_request_ (
+  sender   INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
+  receiver INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (sender, receiver),
+  CHECK (sender <> receiver)
 );
 
 CREATE TABLE IF NOT EXISTS room_ (
-    id SERIAL PRIMARY KEY,
-    uuid UUID UNIQUE,
-    owner INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    global BOOLEAN DEFAULT false
+  id SERIAL PRIMARY KEY,
+  uuid UUID UNIQUE,
+  owner INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  global BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS membership_ (
@@ -30,9 +45,9 @@ CREATE TABLE IF NOT EXISTS message_ (
 );
 
 CREATE TABLE ws_token_ (
-    token TEXT PRIMARY KEY,
-    room_id INT NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL
+  token TEXT PRIMARY KEY,
+  room_id INT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL
 );
 
 -- Message timestamp creation

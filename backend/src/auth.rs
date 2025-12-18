@@ -4,7 +4,10 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode}
 use password_hash::SaltString;
 use password_hash::rand_core::OsRng;
 
-use axum::http::{HeaderMap, StatusCode};
+use axum::{
+    Json,
+    http::{HeaderMap, StatusCode},
+};
 use uuid::Uuid;
 
 const DEFAULT_SECRET_KEY: &str = "43aaf85b92f1ae6fbcef7732c50a0904";
@@ -74,4 +77,11 @@ pub fn verify_jwt(headers: HeaderMap) -> Result<Claims, (StatusCode, String)> {
     )
     .map(|data| data.claims)
     .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".to_string()))
+}
+
+pub async fn validate_token(
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    let _ = verify_jwt(headers)?;
+    Ok(Json(serde_json::json!({"valid": true})))
 }

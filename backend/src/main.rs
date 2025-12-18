@@ -48,6 +48,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(routes::users::routes())
         .merge(routes::rooms::routes())
         .merge(routes::messages::routes())
+        .merge(routes::friends::routes())
         .merge(routes::ws::routes())
         .layer(Extension(db_pool))
         .layer(Extension(realtime))

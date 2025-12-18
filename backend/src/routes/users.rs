@@ -1,7 +1,7 @@
 use axum::{
     Extension, Json, Router,
     extract::Request,
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     middleware::Next,
     response::Response,
     routing::{get, post},
@@ -11,7 +11,7 @@ use std::env;
 use uuid::Uuid;
 use validator::ValidateEmail;
 
-use crate::auth::{create_jwt, hash_password, verify_jwt, verify_password};
+use crate::auth::{create_jwt, hash_password, validate_token, verify_password};
 
 const DUMMY_HASH: &str = "$argon2id$v=19$m=4096,t=3,p=1$YWFhYWFhYWFhYWFhYWFhYQ$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
@@ -148,11 +148,4 @@ pub async fn register_user(
             token,
         }),
     ))
-}
-
-async fn validate_token(
-    headers: HeaderMap,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let _ = verify_jwt(headers)?;
-    Ok(Json(serde_json::json!({"valid": true})))
 }

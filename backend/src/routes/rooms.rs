@@ -81,7 +81,7 @@ async fn list_rooms(
     .bind(user_id)
     .fetch_all(&db)
     .await
-    .unwrap_or_else(|_| Vec::new());
+    .unwrap_or(Vec::new());
 
     Ok(Json(rooms))
 }
