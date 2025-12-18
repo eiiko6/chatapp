@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS friendship_ (
   user_first  INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
   user_second INT NOT NULL REFERENCES user_(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (user_first, user_second),
+  PRIMARY KEY (user_first, user_second)
 );
 
 CREATE TABLE IF NOT EXISTS friend_request_ (

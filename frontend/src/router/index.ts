@@ -4,6 +4,7 @@ import { initAuth, validateToken } from '../stores/auth.ts'
 import LoginPage from '../pages/LoginPage.vue'
 import RoomsPage from '../pages/RoomsPage.vue'
 import ChatPage from '../pages/ChatPage.vue'
+import FriendListPage from '../pages/FriendListPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,7 @@ const router = createRouter({
     { path: '/login', component: LoginPage },
     { path: '/', component: RoomsPage },
     { path: '/rooms/:uuid', component: ChatPage, props: true },
+    { path: '/friendlist', component: FriendListPage }
   ],
 })
 

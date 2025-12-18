@@ -21,3 +21,14 @@ INSERT INTO message_ (sender, room, message_type, content) VALUES
 (2, 2, 'text', 'Anyone seen the new tech updates?'),
 (1, 3, 'image', 'Heres a funny meme I found!'),
 (3, 1, 'text', 'I love how active this room is!');
+
+INSERT INTO friendship_ (user_first, user_second) VALUES
+(1, 3),  -- Alice and Carol
+(2, 3);  -- Bob and Carol
+
+INSERT INTO friend_request_ (sender, receiver) VALUES
+(2, 1);  -- Bob sent a friend request to Alice
+
+INSERT INTO ws_token_ (token, room_id, expires_at) VALUES
+('random_token_1', 1, '2025-12-31T23:59:59Z'),
+('random_token_2', 2, '2025-12-31T23:59:59Z');

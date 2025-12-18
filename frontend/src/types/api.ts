@@ -17,3 +17,12 @@ export interface Message {
   sent_at: string
 }
 
+export interface Friend {
+  uuid: string
+  username: string
+}
+
+export interface FriendRequest {
+  sender_uuid: string
+  sender_username: string
+}

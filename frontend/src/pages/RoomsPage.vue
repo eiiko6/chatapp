@@ -7,6 +7,9 @@
 
     <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
 
+    <router-link to="/friendlist">
+      to friendlist
+    </router-link>
 
     <ul class="rooms-list">
       <li v-for="room in rooms" :key="room.uuid" class="room-item">

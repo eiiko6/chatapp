@@ -6,7 +6,7 @@ use axum::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db::user_id_from_uuid;
+use crate::db::{user_id_from_uuid, username_from_id, username_from_uuid};
 use crate::{auth::verify_jwt, db::id_from_username};
 
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -100,7 +100,7 @@ async fn send_request(
     headers: HeaderMap,
     Extension(db): Extension<PgPool>,
     Json(payload): Json<SendFriendRequestPayload>,
-) -> Result<StatusCode, (StatusCode, String)> {
+) -> Result<(StatusCode, Json<FriendRequest>), (StatusCode, String)> {
     let claims = verify_jwt(headers)?;
 
     let sender_id = user_id_from_uuid(&db, claims.sub).await?;
@@ -113,6 +113,28 @@ async fn send_request(
         ));
     }
 
+    let is_already_friend = sqlx::query_scalar::<_, bool>(
+        r#"
+        SELECT EXISTS (
+            SELECT 1 FROM friendship_
+            WHERE (user_first = $1 AND user_second = $2)
+               OR (user_first = $2 AND user_second = $1)
+        )
+        "#,
+    )
+    .bind(sender_id)
+    .bind(receiver_id)
+    .fetch_one(&db)
+    .await
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Database error".into()))?;
+
+    if is_already_friend {
+        return Err((
+            StatusCode::CONFLICT,
+            "You are already friends with this user".into(),
+        ));
+    }
+
     sqlx::query("INSERT INTO friend_request_ (sender, receiver) VALUES ($1, $2)")
         .bind(sender_id)
         .bind(receiver_id)
@@ -120,14 +142,20 @@ async fn send_request(
         .await
         .map_err(|_| (StatusCode::CONFLICT, "Request already exists".into()))?;
 
-    Ok(StatusCode::CREATED)
+    Ok((
+        StatusCode::CREATED,
+        Json(FriendRequest {
+            sender_uuid: claims.sub,
+            sender_username: username_from_id(&db, receiver_id).await?,
+        }),
+    ))
 }
 
 async fn accept_request(
     headers: HeaderMap,
     Extension(db): Extension<PgPool>,
     Json(payload): Json<AcceptFriendRequestPayload>,
-) -> Result<StatusCode, (StatusCode, String)> {
+) -> Result<(StatusCode, Json<Friend>), (StatusCode, String)> {
     let claims = verify_jwt(headers)?;
 
     let receiver_id = user_id_from_uuid(&db, claims.sub).await?;
@@ -144,13 +172,19 @@ async fn accept_request(
         .await
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".into()))?;
 
-    let rows = sqlx::query("DELETE FROM friend_request_ WHERE sender = $1 AND receiver = $2")
-        .bind(sender_id)
-        .bind(receiver_id)
-        .execute(&mut *tx)
-        .await
-        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".into()))?
-        .rows_affected();
+    let rows = sqlx::query(
+        r#"
+        DELETE FROM friend_request_
+        WHERE sender = $1 AND receiver = $2
+        OR sender = $2 AND receiver = $1
+        "#,
+    )
+    .bind(sender_id)
+    .bind(receiver_id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".into()))?
+    .rows_affected();
 
     if rows == 0 {
         return Err((StatusCode::NOT_FOUND, "No such request".into()));
@@ -170,5 +204,11 @@ async fn accept_request(
         )
     })?;
 
-    Ok(StatusCode::CREATED)
+    Ok((
+        StatusCode::CREATED,
+        Json(Friend {
+            uuid: payload.sender_uuid,
+            username: username_from_uuid(&db, payload.sender_uuid).await?,
+        }),
+    ))
 }
