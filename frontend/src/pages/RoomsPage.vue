@@ -7,10 +7,6 @@
 
     <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
 
-    <router-link to="/friendlist">
-      to friendlist
-    </router-link>
-
     <ul class="rooms-list">
       <li v-for="room in rooms" :key="room.uuid" class="room-item">
         <router-link class="room-link" :to="`/rooms/${room.uuid}`">
@@ -18,23 +14,17 @@
         </router-link>
       </li>
     </ul>
-
-    <button class="logout" @click="logout()">Logout</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { initAuth, logout as authLogout } from '../stores/auth.ts'
+import { initAuth } from '../stores/auth.ts'
 import { fetchRooms } from '../api/rooms'
 import type { Room } from '../types/api'
 import CreateRoomModal from '../components/CreateRoomModal.vue'
 
 const showCreate = ref(false)
-
-
-const router = useRouter()
 
 const rooms = ref<Room[]>([])
 
@@ -42,11 +32,6 @@ onMounted(async () => {
   const auth = await initAuth()
   rooms.value = await fetchRooms(auth.uuid!)
 })
-
-function logout() {
-  authLogout()
-  router.push('/login')
-}
 </script>
 
 <style scoped>
@@ -94,13 +79,6 @@ function logout() {
 
 .room-link:hover {
   background: rgba(255, 255, 255, 0.03);
-}
-
-.logout {
-  position: absolute;
-  left: 0;
-  top: 0;
-  margin: 30px;
 }
 
 .owner {

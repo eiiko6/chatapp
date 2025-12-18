@@ -52,7 +52,7 @@ input:focus, textarea:focus {
   border-color: var(--accent);
 }
 
-button {
+button, .button {
   font-size: 1rem;
   background: var(--accent);
   color: #0b0d12;
@@ -61,9 +61,11 @@ button {
   padding: 0.6rem 1rem;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  margin: 5px;
 }
 
-button:hover {
+button:hover, .button:hover {
   background: var(--accent-hover);
 }
 

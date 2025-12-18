@@ -32,3 +32,6 @@ INSERT INTO friend_request_ (sender, receiver) VALUES
 INSERT INTO ws_token_ (token, room_id, expires_at) VALUES
 ('random_token_1', 1, '2025-12-31T23:59:59Z'),
 ('random_token_2', 2, '2025-12-31T23:59:59Z');
+
+INSERT INTO room_invite_ (sender, receiver, room) VALUES
+(2, 1, 2);
