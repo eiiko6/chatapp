@@ -5,8 +5,9 @@ export interface LoginResponse {
 
 export interface Room {
   uuid: string
-  owner: number
+  owner_name: number
   name: string
+  globa: boolean
 }
 
 export interface Message {

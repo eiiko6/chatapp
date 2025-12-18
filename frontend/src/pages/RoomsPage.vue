@@ -2,13 +2,16 @@
   <div class="rooms-page">
     <header class="rooms-header">
       <h1>Your rooms</h1>
-      <CreateRoomForm @created="rooms.push($event)" />
+      <button @click="showCreate = true">Create room</button>
     </header>
+
+    <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
+
 
     <ul class="rooms-list">
       <li v-for="room in rooms" :key="room.uuid" class="room-item">
         <router-link class="room-link" :to="`/rooms/${room.uuid}`">
-          {{ room.name }}
+          {{ room.name }} <span class="owner">{{ room.owner_name }}</span>
         </router-link>
       </li>
     </ul>
@@ -23,6 +26,10 @@ import { useRouter } from 'vue-router'
 import { initAuth, logout as authLogout } from '../stores/auth.ts'
 import { fetchRooms } from '../api/rooms'
 import type { Room } from '../types/api'
+import CreateRoomModal from '../components/CreateRoomModal.vue'
+
+const showCreate = ref(false)
+
 
 const router = useRouter()
 
@@ -37,11 +44,6 @@ function logout() {
   authLogout()
   router.push('/login')
 }
-</script>
-
-<script lang="ts">
-import CreateRoomForm from '../components/CreateRoomForm.vue'
-export default { components: { CreateRoomForm } }
 </script>
 
 <style scoped>
@@ -96,5 +98,12 @@ export default { components: { CreateRoomForm } }
   left: 0;
   top: 0;
   margin: 30px;
+}
+
+.owner {
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
 }
 </style>

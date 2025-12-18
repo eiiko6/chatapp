@@ -5,10 +5,10 @@ export function fetchRooms(userUuid: string) {
   return apiFetch<Room[]>(`/rooms/${userUuid}`)
 }
 
-export function createRoom(name: string) {
+export function createRoom(name: string, global: boolean) {
   return apiFetch<Room>('/rooms', {
     method: 'POST',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, global }),
   })
 }
 

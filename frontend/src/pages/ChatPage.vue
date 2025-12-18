@@ -107,10 +107,7 @@ onUnmounted(() => {
   border-top: 1px solid var(--border);
   background: var(--panel);
 }
-</style>
 
-
-<style scoped>
 .chat-page {
   display: flex;
   flex-direction: column;

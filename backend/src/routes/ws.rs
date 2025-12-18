@@ -80,7 +80,7 @@ async fn ws_handler(
     Extension(realtime): Extension<Realtime>,
     Extension(db): Extension<sqlx::PgPool>,
 ) -> Result<impl IntoResponse, axum::http::StatusCode> {
-    tracing::info!("recieved ws handshake: {}", room_uuid);
+    // tracing::info!("recieved ws handshake: {}", room_uuid);
 
     let room_id = room_id_from_uuid(&db, room_uuid)
         .await

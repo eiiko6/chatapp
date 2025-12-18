@@ -13,8 +13,9 @@ use crate::{auth::verify_jwt, db::room_id_from_uuid};
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Room {
     pub uuid: Uuid,
-    pub owner: i32,
+    pub owner_name: String,
     pub name: String,
+    pub global: bool,
 }
 
 #[derive(serde::Deserialize)]
@@ -33,13 +34,12 @@ pub fn routes() -> Router {
 pub async fn is_member(user_id: i32, room_id: i32, db: &Pool<Postgres>) -> bool {
     sqlx::query_scalar(
         r#"
-        SELECT r.global
-            OR EXISTS (
-                SELECT 1
-                FROM membership_ m
-                WHERE m.user_id = $1
-                  AND m.room = r.id
-            )
+        SELECT r.global OR EXISTS (
+            SELECT 1
+            FROM membership_ m
+            WHERE m.user_id = $1
+            AND m.room = r.id
+        )
         FROM room_ r
         WHERE r.id = $2
         "#,
@@ -65,8 +65,12 @@ async fn list_rooms(
 
     let rooms = sqlx::query_as::<_, Room>(
         r#"
-        SELECT r.uuid, r.owner, r.name
+        SELECT r.uuid,
+               u.username AS owner_name,
+               r.name,
+               r.global
         FROM room_ r
+        JOIN user_ u ON u.id = r.owner
         WHERE r.global OR EXISTS (
             SELECT 1
             FROM membership_ m
@@ -115,12 +119,19 @@ async fn create_room(
         .await
         .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create room")))?;
 
+    let owner_name = sqlx::query_scalar("SELECT username FROM user_ WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(&db)
+        .await
+        .map_err(|_| (StatusCode::BAD_REQUEST, format!("Could not create room")))?;
+
     Ok((
         StatusCode::CREATED,
         Json(Room {
             uuid: room_uuid,
-            owner: user_id,
+            owner_name,
             name: payload.name,
+            global: payload.global,
         }),
     ))
 }
