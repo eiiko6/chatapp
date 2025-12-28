@@ -23,6 +23,7 @@ pub struct MessageRow {
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug, Clone)]
 pub struct Message {
+    pub uuid: Uuid,
     pub sender: String,
     pub message_type: String,
     pub content: String,
@@ -87,6 +88,7 @@ async fn list_messages(
     let messages: Vec<Message> = messages
         .into_iter()
         .map(|m| Message {
+            uuid: uuid::Uuid::now_v7(),
             sender: m.sender,
             message_type: m.message_type,
             content: m.content,
@@ -136,6 +138,7 @@ async fn create_message(
     let sender_name = username_from_uuid(&db, claims.sub).await?;
 
     let message = Message {
+        uuid: uuid::Uuid::now_v7(),
         sender: sender_name,
         message_type: payload.message_type,
         content: payload.content,

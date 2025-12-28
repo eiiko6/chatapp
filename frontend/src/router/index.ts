@@ -9,8 +9,18 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', redirect: '/rooms/none' },
-    { path: '/login', component: LoginPage },
-    { path: '/rooms/:uuid', component: ChatPage, props: true },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginPage,
+      meta: { hideNavbar: true }
+    },
+    {
+      path: '/rooms/:uuid',
+      name: 'chat',
+      component: ChatPage,
+      props: true
+    },
     { path: '/friendlist', component: FriendListPage }
   ],
 })

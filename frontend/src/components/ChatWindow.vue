@@ -66,8 +66,7 @@ async function initializeRoom() {
 
   socket.onmessage = (event) => {
     const msg: Message = JSON.parse(event.data);
-    const exists = messages.value.some(m => m.sent_at === msg.sent_at && m.sender === msg.sender);
-    if (!exists) {
+    if (!messages.value.some(m => m.uuid === msg.uuid)) {
       messages.value.push(msg);
       nextTick().then(scrollToBottom);
     }

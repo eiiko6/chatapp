@@ -1,8 +1,16 @@
 <template>
   <div class="chat-layout">
-    <aside class="sidebar">
-      <RoomList />
+    <button class="menu-toggle" :class="{ 'sidebar-closed': !isSidebarOpen }" @click="isSidebarOpen = !isSidebarOpen">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" :class="{ 'is-open': isSidebarOpen }">
+      <div class="sidebar-content">
+        <RoomList />
+      </div>
     </aside>
+
+    <div v-if="isSidebarOpen" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
 
     <main class="chat-window-container">
       <ChatWindow :uuid="uuid" />
@@ -11,15 +19,20 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ uuid: string }>();
+import { ref } from 'vue';
 import RoomList from "../components/RoomList.vue";
 import ChatWindow from "../components/ChatWindow.vue";
+
+defineProps<{ uuid: string }>();
+
+const isSidebarOpen = ref(true);
 </script>
 
 <style scoped>
 .chat-layout {
+  position: relative;
   display: flex;
-  height: 80vh;
+  height: 100%;
   width: 100%;
   max-width: 1200px;
   background: var(--panel);
@@ -33,6 +46,20 @@ import ChatWindow from "../components/ChatWindow.vue";
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  background: var(--panel);
+  transition: width 0.3s ease, transform 0.3s ease;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.sidebar:not(.is-open) {
+  width: 0;
+  border-right: none;
+}
+
+.sidebar-content {
+  width: 300px;
+  height: 100%;
 }
 
 .chat-window-container {
@@ -40,11 +67,65 @@ import ChatWindow from "../components/ChatWindow.vue";
   display: flex;
   flex-direction: column;
   min-width: 0;
+  transition: all 0.3s ease;
+}
+
+.menu-toggle {
+  position: absolute;
+  top: 24px;
+  left: 15px;
+  z-index: 30;
+  background: var(--panel);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: left 0.3s ease;
+}
+
+.menu-toggle.sidebar-closed {
+  left: 15px;
+}
+
+.menu-toggle i {
+  font-size: 1.6rem;
 }
 
 @media (max-width: 720px) {
   .sidebar {
-    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+    width: 280px;
+  }
+
+  .sidebar:not(.is-open) {
+    width: 280px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar-content {
+    width: 280px;
+  }
+
+  .sidebar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 15;
+  }
+
+  .chat-window-container {
+    padding-top: 50px;
   }
 }
 </style>

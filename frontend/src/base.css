@@ -13,6 +13,7 @@ html,
 body,
 #app {
   height: 100%;
+  overflow-y: hidden;
 }
 
 :root {
@@ -63,9 +64,89 @@ button, .button {
   cursor: pointer;
   text-decoration: none;
   margin: 5px;
+  outline: none;
 }
 
 button:hover, .button:hover {
   background: var(--accent-hover);
 }
 
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  padding: 0;
+
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+
+  display: inline-grid;
+  place-content: center;
+  vertical-align: middle;
+  position: relative;
+  transition: all 0.15s ease-in-out;
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  background-color: #0b0d12;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--text);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.2);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text) transparent;
+}
+
+i {
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+i:hover {
+  color: var(--text);
+}
+
+.btn {
+  outline: none;
+}

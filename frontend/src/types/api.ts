@@ -11,6 +11,7 @@ export interface Room {
 }
 
 export interface Message {
+  uuid: string
   sender: string
   message_type: 'text'
   content: string

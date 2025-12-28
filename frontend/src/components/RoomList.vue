@@ -2,17 +2,17 @@
   <div class="room-list">
     <header class="rooms-header">
       <h2>Rooms</h2>
-      <button class="create-btn" @click="showCreate = true">+</button>
+      <button class="create-btn" @click="showCreate = true"><i class="fa-solid fa-plus"></i></button>
     </header>
 
     <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
 
     <div class="scroll-area">
-      <router-link v-for="room in rooms" :key="room.uuid" :to="`/rooms/${room.uuid}`" class="room-item"
+      <router-link v-for="room in rooms" :key="room.uuid" :to="`/rooms/${room.uuid}`" class="btn room-item"
         :class="{ active: route.params.uuid === room.uuid }">
         <div class="room-info">
           <span class="room-name">{{ room.name }}</span>
-          <span class="room-owner">{{ room.owner_name }}</span>
+          <span class="room-owner">by {{ room.owner_name }}</span>
         </div>
       </router-link>
     </div>
@@ -55,6 +55,7 @@ onMounted(async () => {
 .rooms-header h2 {
   font-size: 1.1rem;
   margin: 0;
+  margin-left: 38px;
 }
 
 .scroll-area {
@@ -80,11 +81,11 @@ onMounted(async () => {
 
 .room-item.active {
   background: var(--accent);
-  color: white;
+  color: rgba(0, 0, 0, 0.8);
 }
 
 .room-item.active .room-owner {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 1);
 }
 
 .room-info {
@@ -102,15 +103,21 @@ onMounted(async () => {
 }
 
 .create-btn {
+  margin: 0;
+  padding: 18px;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius);
   border: none;
-  background: var(--accent);
+  background: transparent;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.create-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 </style>

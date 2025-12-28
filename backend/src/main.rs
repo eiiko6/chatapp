@@ -58,11 +58,11 @@ async fn main() -> anyhow::Result<()> {
         .layer(Extension(db_pool))
         .layer(Extension(realtime))
         .layer(GovernorLayer::new(governor_conf))
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
-                .on_response(DefaultOnResponse::new().level(Level::INFO)),
-        )
+        // .layer(
+        //     TraceLayer::new_for_http()
+        //         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+        //         .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        // )
         .layer(cors);
 
     let port = var("CHATAPP_SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
