@@ -45,15 +45,14 @@ export async function validateToken(): Promise<boolean> {
   if (!auth.token) return false
 
   try {
-    await apiFetch('/validate-token', {
-      method: 'GET',
-    })
+    await apiFetch('/validate-token')
     return true
-  } catch (e) {
-    console.log(e);
-
-    await logout()
-    return false
+  } catch (e: any) {
+    // Only logout if token is bad
+    if (e.message.includes('401')) {
+      await logout()
+      return false
+    }
+    return true
   }
 }
-

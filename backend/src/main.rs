@@ -4,7 +4,11 @@ use axum::{
 };
 use std::{env::var, net::SocketAddr, time::Duration};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+};
+use tracing::Level;
 
 mod auth;
 mod db;
@@ -13,8 +17,9 @@ mod routes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber).unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
 
     tracing::info!("Connecting to database...");
     let db_pool = db::init_db().await?;
@@ -25,8 +30,8 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
     let governor_conf = GovernorConfigBuilder::default()
-        .per_second(50)
-        .burst_size(200)
+        .burst_size(10)
+        .per_millisecond(500)
         .finish()
         .unwrap();
 
@@ -52,8 +57,13 @@ async fn main() -> anyhow::Result<()> {
         .merge(routes::ws::routes())
         .layer(Extension(db_pool))
         .layer(Extension(realtime))
-        .layer(cors)
-        .layer(GovernorLayer::new(governor_conf));
+        .layer(GovernorLayer::new(governor_conf))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        )
+        .layer(cors);
 
     let port = var("CHATAPP_SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
     let addr = format!("127.0.0.1:{port}");

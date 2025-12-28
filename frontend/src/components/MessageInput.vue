@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, defineExpose } from 'vue'
 
 const content = ref('')
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
+
 const emit = defineEmits<{ (e: 'send', content: string): void }>()
 
+defineExpose({
+  focus: () => {
+    textareaRef.value?.focus()
+  }
+})
+
 function submit() {
-  if (!content.value) return
+  if (!content.value.trim()) return
   emit('send', content.value)
   content.value = ''
   resize()
@@ -13,17 +21,15 @@ function submit() {
 
 function resize() {
   nextTick(() => {
-    const textarea = document.querySelector('textarea')
-    if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = textarea.scrollHeight + 'px'
+    if (textareaRef.value) {
+      textareaRef.value.style.height = 'auto'
+      textareaRef.value.style.height = textareaRef.value.scrollHeight + 'px'
     }
   })
 }
 
 function handleKeydown(e: KeyboardEvent) {
   if ((e.shiftKey || e.altKey) && e.key === 'Enter') {
-    // Insert a line break at cursor
     const textarea = e.target as HTMLTextAreaElement
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
@@ -41,9 +47,9 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <textarea v-model="content" @input="resize" @keydown="handleKeydown" placeholder="type a message" rows="1"></textarea>
+  <textarea ref="textareaRef" v-model="content" @input="resize" @keydown="handleKeydown" placeholder="type a message"
+    rows="1"></textarea>
 </template>
-
 
 <style scoped>
 textarea {
@@ -54,5 +60,9 @@ textarea {
   font-size: 1rem;
   line-height: 1.4;
   box-sizing: border-box;
+  background: transparent;
+  border: none;
+  color: inherit;
+  outline: none;
 }
 </style>

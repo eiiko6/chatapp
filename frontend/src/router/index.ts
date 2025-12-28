@@ -1,33 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { initAuth, validateToken } from '../stores/auth.ts'
+import { initAuth } from '../stores/auth.ts'
 
 import LoginPage from '../pages/LoginPage.vue'
-import RoomsPage from '../pages/RoomsPage.vue'
 import ChatPage from '../pages/ChatPage.vue'
 import FriendListPage from '../pages/FriendListPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/', redirect: '/rooms/none' },
     { path: '/login', component: LoginPage },
-    { path: '/', component: RoomsPage },
     { path: '/rooms/:uuid', component: ChatPage, props: true },
     { path: '/friendlist', component: FriendListPage }
   ],
 })
 
 router.beforeEach(async (to) => {
+  if (to.path === '/login') return true
+
   const auth = await initAuth()
 
-  if (!auth.isAuthenticated && to.path !== '/login') {
+  if (!auth.isAuthenticated) {
     return '/login'
   }
 
-  if (auth.isAuthenticated) {
-    const valid = await validateToken()
-    if (!valid) return '/login'
-  }
+  return true
 })
 
 export default router
-
