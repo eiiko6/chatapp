@@ -4,11 +4,7 @@ use axum::{
 };
 use std::{env::var, net::SocketAddr, time::Duration};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
-use tower_http::{
-    cors::{Any, CorsLayer},
-    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
-};
-use tracing::Level;
+use tower_http::cors::{Any, CorsLayer};
 
 mod auth;
 mod db;
@@ -30,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
     let governor_conf = GovernorConfigBuilder::default()
-        .burst_size(10)
+        .burst_size(15)
         .per_millisecond(500)
         .finish()
         .unwrap();

@@ -42,11 +42,12 @@ footer {
 
 @media (max-width: 720px) {
   #content {
-    padding: 1.2rem;
+    padding: 12px;
+    padding-top: 30px;
   }
 
   footer {
-    padding-bottom: 16px;
+    padding-bottom: 56px;
   }
 }
 </style>

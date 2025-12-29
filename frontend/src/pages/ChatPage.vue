@@ -6,7 +6,7 @@
 
     <aside class="sidebar" :class="{ 'is-open': isSidebarOpen }">
       <div class="sidebar-content">
-        <RoomList />
+        <RoomList @select-room="handleRoomSelection" />
       </div>
     </aside>
 
@@ -24,8 +24,13 @@ import RoomList from "../components/RoomList.vue";
 import ChatWindow from "../components/ChatWindow.vue";
 
 defineProps<{ uuid: string }>();
-
 const isSidebarOpen = ref(true);
+
+const handleRoomSelection = () => {
+  if (window.innerWidth <= 720) {
+    isSidebarOpen.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -64,6 +69,7 @@ const isSidebarOpen = ref(true);
 
 .chat-window-container {
   flex: 1;
+  padding-left: 38px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -124,8 +130,8 @@ const isSidebarOpen = ref(true);
     z-index: 15;
   }
 
-  .chat-window-container {
-    padding-top: 50px;
+  .menu-toggle:hover i {
+    color: var(--muted);
   }
 }
 </style>

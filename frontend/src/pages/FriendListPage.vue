@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { fetchFriends, fetchFriendRequests, acceptFriendRequest, sendFriendRequest } from '../api/friends'
-import type { Friend, FriendRequest } from '../types/api'
+import type { Friend, FriendRequest } from '../api'
 
 const friends = ref<Friend[]>([])
 const requests = ref<FriendRequest[]>([])

@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { fetchMessages, sendMessage, getWsToken } from "../api/messages";
-import type { Message } from "../types/api";
+import type { Message } from "../types";
 import { API_WS } from '../main.ts'
 import MessageList from "./MessageList.vue";
 import MessageInput from "./MessageInput.vue";
@@ -128,6 +128,8 @@ onUnmounted(() => {
 .empty-state {
   text-align: center;
   font-size: 1.2rem;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .empty-state i {

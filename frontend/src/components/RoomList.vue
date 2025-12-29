@@ -9,7 +9,7 @@
 
     <div class="scroll-area">
       <router-link v-for="room in rooms" :key="room.uuid" :to="`/rooms/${room.uuid}`" class="btn room-item"
-        :class="{ active: route.params.uuid === room.uuid }">
+        :class="{ active: route.params.uuid === room.uuid }" @click="emit('select-room')">
         <div class="room-info">
           <span class="room-name">{{ room.name }}</span>
           <span class="room-owner">by {{ room.owner_name }}</span>
@@ -22,14 +22,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { initAuth } from '../stores/auth.ts';
+import { initAuth } from '../store.ts';
 import { fetchRooms } from '../api/rooms';
-import type { Room } from '../types/api';
+import type { Room } from '../types';
 import CreateRoomModal from './CreateRoomModal.vue';
 
 const route = useRoute();
 const showCreate = ref(false);
 const rooms = ref<Room[]>([]);
+
+const emit = defineEmits(['select-room']);
 
 onMounted(async () => {
   const auth = await initAuth();
@@ -42,6 +44,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .rooms-header {

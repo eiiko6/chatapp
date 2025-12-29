@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { logout as authLogout } from '../stores/auth.ts'
+import { logout as authLogout } from '../store.ts'
 
 const router = useRouter()
 
@@ -38,6 +38,10 @@ function logout() {
   border: 1px solid var(--border);
   border-radius: 100vh;
   z-index: 50;
+
+  user-select: none;
+  -webkit-user-select: none;
+
 }
 
 .nav-item {
@@ -67,16 +71,18 @@ function logout() {
     transform 0.15s ease;
 }
 
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
+@media (hover: hover) {
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
 
-.nav-item:not(.router-link-active):hover {
-  background: rgba(255, 255, 255, 0.04);
-}
+  .nav-item:not(.router-link-active):hover i {
+    color: var(--text);
+  }
 
-.nav-item:not(.router-link-active):hover i {
-  color: var(--text);
+  .nav-item.logout:hover i {
+    color: rgba(255, 80, 80, 0.8);
+  }
 }
 
 .router-link-active i {

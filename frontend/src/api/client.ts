@@ -1,4 +1,4 @@
-import { initAuth, logout } from '../stores/auth.ts'
+import { initAuth, logout } from '../store.ts'
 import { API } from '../main.ts'
 import router from '../router'
 

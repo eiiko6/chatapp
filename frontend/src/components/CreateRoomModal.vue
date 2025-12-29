@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { createRoom } from '../api/rooms'
-import type { Room } from '../types/api'
+import type { Room } from '../types'
 
 const name = ref('')
 const global = ref(false)

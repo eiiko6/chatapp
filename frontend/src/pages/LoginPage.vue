@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { login } from '../stores/auth.ts'
+import { login } from '../store.ts'
 import { useRouter } from "vue-router";
 
 const email = ref("");

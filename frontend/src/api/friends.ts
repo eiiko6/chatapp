@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { Friend, FriendRequest } from '../types/api'
+import type { Friend, FriendRequest } from '../api'
 
 export function fetchFriends() {
   return apiFetch<Friend[]>('/friends')

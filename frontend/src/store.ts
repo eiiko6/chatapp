@@ -1,6 +1,6 @@
 import { load, Store } from '@tauri-apps/plugin-store'
-import type { LoginResponse } from '../types/api'
-import { apiFetch } from '../api/client'
+import type { LoginResponse } from './types'
+import { apiFetch } from './api/client'
 
 let store: Store | null = null
 
@@ -9,6 +9,20 @@ async function getStore() {
     store = await load('store.json')
   }
   return store
+}
+
+export async function setLastRoom(uuid: string) {
+  if (!uuid || uuid === 'none') return
+
+  const s = await getStore()
+  await s.set('last_room_uuid', uuid)
+  await s.save()
+}
+
+export async function getLastRoom(): Promise<string | null> {
+  const s = await getStore()
+  const lastRoom = await s.get<string>('last_room_uuid')
+  return lastRoom ?? null
 }
 
 export async function initAuth() {

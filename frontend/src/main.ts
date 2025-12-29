@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
-import router from './router'
+import router from './router.ts'
 import App from './App.vue'
-import { validateToken } from './stores/auth.ts'
+import { validateToken } from './store.ts'
 
 import './base.css'
 
@@ -15,5 +15,5 @@ async function init() {
 
 init()
 
-export const API = 'http://127.0.0.1:8080'
-export const API_WS = 'ws://127.0.0.1:8080/ws'
+export const API = 'http://192.168.1.183:8081'
+export const API_WS = 'ws://192.168.1.183:8081/ws'
