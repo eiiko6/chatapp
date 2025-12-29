@@ -61,8 +61,8 @@ async fn main() -> anyhow::Result<()> {
         // )
         .layer(cors);
 
-    let port = var("CHATAPP_SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
-    let addr = format!("127.0.0.1:{port}");
+    let port = var("CHATAPP_SERVER_PORT").unwrap_or_else(|_| "8081".to_string());
+    let addr = format!("0.0.0.0:{port}");
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     tracing::info!("Listening on {addr}");

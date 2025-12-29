@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { Message } from '../api'
+import type { Message } from '../types'
 
 export function fetchMessages(roomUuid: string) {
   return apiFetch<Message[]>(`/messages/${roomUuid}`)

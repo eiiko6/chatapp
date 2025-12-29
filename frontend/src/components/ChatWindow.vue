@@ -12,7 +12,6 @@
     </div>
 
     <div class="input-container">
-      <!-- Added ref="messageInputRef" -->
       <MessageInput ref="messageInputRef" @send="onSend" />
     </div>
   </div>
@@ -22,26 +21,24 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { fetchMessages, sendMessage, getWsToken } from "../api/messages";
 import type { Message } from "../types";
-import { API_WS } from '../main.ts'
+import { API_WS } from '../main.ts';
 import MessageList from "./MessageList.vue";
 import MessageInput from "./MessageInput.vue";
+
+import WebSocket from '@tauri-apps/plugin-websocket';
 
 const props = defineProps<{ uuid: string }>();
 const messages = ref<Message[]>([]);
 const messageListRef = ref<HTMLElement | null>(null);
-const messageInputRef = ref<InstanceType<typeof MessageInput> | null>(null); // Ref for focusing
+const messageInputRef = ref<InstanceType<typeof MessageInput> | null>(null);
+
 let socket: WebSocket | null = null;
 
-// Handle global Enter key to focus input
 const handleGlobalKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     const active = document.activeElement?.tagName.toLowerCase();
-
-    // Don't hijack focus if user is already typing in an input or textarea
     const isTyping = active === 'input' || active === 'textarea';
-
     if (!isTyping && messageInputRef.value) {
-      // Prevent default to avoid side effects like clicking a focused button
       event.preventDefault();
       messageInputRef.value.focus();
     }
@@ -50,27 +47,39 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
 
 async function initializeRoom() {
   if (socket) {
-    socket.close();
+    await socket.disconnect();
     socket = null;
   }
+
   messages.value = [];
 
   if (props.uuid === 'none') return;
 
-  messages.value = await fetchMessages(props.uuid);
-  await nextTick();
-  scrollToBottom();
+  try {
+    messages.value = await fetchMessages(props.uuid);
+    await nextTick();
+    scrollToBottom();
 
-  const wsToken = await getWsToken(props.uuid);
-  socket = new WebSocket(`${API_WS}/rooms/${props.uuid}?token=${wsToken}`);
+    const wsToken = await getWsToken(props.uuid);
 
-  socket.onmessage = (event) => {
-    const msg: Message = JSON.parse(event.data);
-    if (!messages.value.some(m => m.uuid === msg.uuid)) {
-      messages.value.push(msg);
-      nextTick().then(scrollToBottom);
-    }
-  };
+    const url = `${API_WS}/rooms/${props.uuid}?token=${wsToken}`;
+    socket = await WebSocket.connect(url);
+
+    socket.addListener((msg) => {
+      if (msg.type === 'Text') {
+        const data: Message = JSON.parse(msg.data);
+
+        if (!messages.value.some(m => m.uuid === data.uuid)) {
+          messages.value.push(data);
+          nextTick().then(scrollToBottom);
+        }
+      }
+    });
+
+    console.log("WebSocket Connected successfully via Rust layer");
+  } catch (err) {
+    console.error("WebSocket connection failed:", err);
+  }
 }
 
 async function onSend(content: string) {
@@ -93,8 +102,10 @@ onMounted(() => {
   window.addEventListener('keydown', handleGlobalKeyDown);
 });
 
-onUnmounted(() => {
-  socket?.close();
+onUnmounted(async () => {
+  if (socket) {
+    await socket.disconnect();
+  }
   window.removeEventListener('keydown', handleGlobalKeyDown);
 });
 </script>

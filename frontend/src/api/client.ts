@@ -1,3 +1,4 @@
+import { fetch } from '@tauri-apps/plugin-http';
 import { initAuth, logout } from '../store.ts'
 import { API } from '../main.ts'
 import router from '../router'
@@ -9,6 +10,8 @@ export async function apiFetch<T>(
   const auth = await initAuth()
 
   const res = await fetch(`${API}${path}`, {
+    method: options.method || 'GET',
+    body: options.body,
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -28,5 +31,5 @@ export async function apiFetch<T>(
     throw new Error(text || res.statusText)
   }
 
-  return res.json()
+  return res.json() as Promise<T>
 }

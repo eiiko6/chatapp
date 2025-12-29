@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { Room } from '../api'
+import type { Room } from '../types'
 
 export function fetchRooms(userUuid: string) {
   return apiFetch<Room[]>(`/rooms/${userUuid}`)

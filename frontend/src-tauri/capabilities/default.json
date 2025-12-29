@@ -8,6 +8,30 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "store:default"
+    "store:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://192.168.1.147:*"
+        },
+        {
+          "url": "https://alatreon.org/chatapp/*"
+        }
+      ],
+      "deny": []
+    },
+    {
+      "identifier": "websocket:default",
+      "allow": [
+        {
+          "url": "ws://192.168.1.147:*"
+        },
+        {
+          "url": "wss://alatreon.org/chatapp/*"
+        }
+      ]
+    },
+    "websocket:default"
   ]
 }
