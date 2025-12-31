@@ -2,9 +2,9 @@ use axum::http::StatusCode;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-pub async fn init_db() -> Result<PgPool, sqlx::Error> {
-    let database_url = "postgres://chatapp:secret@localhost:5432/chatapp";
-    PgPool::connect(database_url).await
+pub async fn init_db(url: String) -> Result<PgPool, sqlx::Error> {
+    let database_url = format!("postgres://chatapp:secret@{url}/chatapp");
+    PgPool::connect(database_url.as_str()).await
 }
 
 pub async fn user_id_from_uuid(db: &PgPool, user_uuid: Uuid) -> Result<i32, (StatusCode, String)> {

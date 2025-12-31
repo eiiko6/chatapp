@@ -29,6 +29,10 @@ pub struct Cli {
     #[arg(short, long, default_value = "8080")]
     port: String,
 
+    /// Database URL
+    #[arg(short, long, default_value = "localhost:5432")]
+    database: String,
+
     /// Verbose mode
     #[arg(short, long)]
     verbose: bool,
@@ -43,7 +47,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     tracing::info!("Connecting to database...");
-    let db_pool = db::init_db().await?;
+    let db_pool = db::init_db(cli.database).await?;
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
