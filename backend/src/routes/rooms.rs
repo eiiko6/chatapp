@@ -7,7 +7,7 @@ use axum::{
 use sqlx::{PgPool, Pool, Postgres};
 use uuid::Uuid;
 
-use crate::db::{id_from_username, user_id_from_uuid, username_from_id};
+use crate::db::{id_from_username, room_name_from_uuid, user_id_from_uuid, username_from_id};
 use crate::{auth::verify_jwt, db::room_id_from_uuid};
 
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -27,6 +27,7 @@ pub struct NewRoomPayload {
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct RoomInvite {
     pub room_uuid: Uuid,
+    pub room_name: String,
     pub sender_uuid: Uuid,
     pub sender_username: String,
 }
@@ -197,7 +198,11 @@ async fn list_invites(
 
     let requests = sqlx::query_as::<_, RoomInvite>(
         r#"
-        SELECT r.uuid AS room_uuid, u.uuid AS sender_uuid, u.username AS sender_username
+        SELECT
+            r.uuid AS room_uuid,
+            r.name AS room_name,
+            u.uuid AS sender_uuid,
+            u.username AS sender_username
         FROM room_invite_ AS i
         JOIN user_ u ON u.id = i.sender
         JOIN room_ r ON r.id = i.room
@@ -207,7 +212,8 @@ async fn list_invites(
     .bind(user_id)
     .fetch_all(&db)
     .await
-    .map_err(|_| {
+    .map_err(|e| {
+        tracing::error!("{e}");
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Could not list room invites".into(),
@@ -267,10 +273,13 @@ async fn send_invite(
 
     tracing::info!("bro");
 
+    let room_name = room_name_from_uuid(&db, payload.room_uuid).await?;
+
     Ok((
         StatusCode::CREATED,
         Json(RoomInvite {
             room_uuid: payload.room_uuid,
+            room_name,
             sender_uuid: claims.sub,
             sender_username: username_from_id(&db, receiver_id).await?,
         }),

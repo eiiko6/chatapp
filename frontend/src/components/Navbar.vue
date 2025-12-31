@@ -1,12 +1,16 @@
 <template>
   <div>
     <nav id="bottom-nav">
-      <router-link to="/rooms/none" class="nav-item" :class="{ 'router-link-active': $route.name === 'chat' }">
+      <router-link to="/" class="nav-item" :class="{ 'router-link-active': $route.name === 'chat' }">
         <i class="fa-solid fa-message"></i>
       </router-link>
 
       <router-link to="/friendlist" class="nav-item">
         <i class="fa-solid fa-user-group"></i>
+      </router-link>
+
+      <router-link to="/notifications" class="nav-item">
+        <i class="fa-solid fa-bell"></i>
       </router-link>
 
       <button class="nav-item logout" @click="logout">

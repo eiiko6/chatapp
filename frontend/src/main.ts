@@ -15,5 +15,5 @@ async function init() {
 
 init()
 
-export const API = 'http://192.168.1.147:8081'
-export const API_WS = 'ws://192.168.1.147:8081/ws'
+export const API = 'http://127.0.0.1:8080'
+export const API_WS = 'ws://127.0.0.1:8080/ws'

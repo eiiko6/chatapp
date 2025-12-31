@@ -4,6 +4,7 @@ import { initAuth, getLastRoom, setLastRoom } from './store'
 import LoginPage from './pages/LoginPage.vue'
 import ChatPage from './pages/ChatPage.vue'
 import FriendListPage from './pages/FriendListPage.vue'
+import NofificationsPage from './pages/NotificationsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,7 +22,8 @@ const router = createRouter({
       component: ChatPage,
       props: true
     },
-    { path: '/friendlist', component: FriendListPage }
+    { path: '/friendlist', component: FriendListPage },
+    { path: '/notifications', component: NofificationsPage }
   ],
 })
 

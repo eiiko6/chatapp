@@ -14,56 +14,30 @@
       </div>
     </header>
 
-    <div class="friends-requests-container">
-      <!-- Friends List -->
-      <div class="friends-list">
-        <h2>Your Friends</h2>
-        <ul>
-          <li v-for="friend in friends" :key="friend.uuid">
-            {{ friend.username }}
-          </li>
-        </ul>
-      </div>
-
-      <!-- Friend Request List -->
-      <div class="requests">
-        <h2>Friend Requests</h2>
-        <ul v-if="requests.length">
-          <li v-for="req in requests" :key="req.sender_uuid">
-            <span>{{ req.sender_username }}</span>
-            <button @click="accept(req.sender_uuid)">Accept</button>
-          </li>
-        </ul>
-        <p v-else>No pending requests</p>
-      </div>
+    <!-- Friends List -->
+    <div class="friends-list">
+      <h2>Your Friends</h2>
+      <ul>
+        <li v-for="friend in friends" :key="friend.uuid">
+          {{ friend.username }}
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchFriends, fetchFriendRequests, acceptFriendRequest, sendFriendRequest } from '../api/friends'
-import type { Friend, FriendRequest } from '../types'
+import { fetchFriends, sendFriendRequest } from '../api/friends'
+import type { Friend } from '../types'
 
 const friends = ref<Friend[]>([])
-const requests = ref<FriendRequest[]>([])
 const username = ref('')
 const errorMessage = ref('')
 
 onMounted(async () => {
   friends.value = await fetchFriends()
-  requests.value = await fetchFriendRequests()
 })
-
-async function accept(senderUuid: string) {
-  try {
-    await acceptFriendRequest(senderUuid)
-    requests.value = requests.value.filter(r => r.sender_uuid !== senderUuid)
-    fetchFriends().then(f => (friends.value = f))
-  } catch (err) {
-    errorMessage.value = 'An error occurred while accepting the request.' // TODO: handle this supposedly impossible case
-  }
-}
 
 async function send() {
   if (!username.value) {
@@ -125,14 +99,7 @@ async function send() {
   font-size: 0.9rem;
 }
 
-.friends-requests-container {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.friends-list,
-.requests {
+.friends-list {
   min-width: 250px;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -140,14 +107,12 @@ async function send() {
   padding: 1rem;
 }
 
-.friends-list ul,
-.requests ul {
+.friends-list ul {
   list-style: none;
   padding: 0;
 }
 
-.friends-list li,
-.requests li {
+.friends-list li {
   background: var(--panel-light);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -155,41 +120,8 @@ async function send() {
   margin-bottom: 0.5rem;
 }
 
-.requests {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.requests li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--panel-light);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.requests li button {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.requests p {
-  font-size: 0.9rem;
-  color: gray;
-}
-
-.friends-list h2,
-.requests h2 {
+.friends-list h2 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
-}
-
-@media (max-width: 720px) {
-  .friends-requests-container {
-    flex-direction: column;
-  }
 }
 </style>

@@ -1,5 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http';
-import { initAuth, logout } from '../store.ts'
+import { getAuthData, clearAuthData } from '../authStore'
 import { API } from '../main.ts'
 import router from '../router'
 
@@ -7,12 +7,11 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const auth = await initAuth()
+  const auth = await getAuthData()
 
   const res = await fetch(`${API}${path}`, {
-    method: options.method || 'GET',
-    body: options.body,
     ...options,
+    method: options.method || 'GET',
     headers: {
       'Content-Type': 'application/json',
       ...(auth.token ? { Authorization: `Bearer ${auth.token}` } : {}),
@@ -21,7 +20,7 @@ export async function apiFetch<T>(
   })
 
   if (res.status === 401) {
-    await logout()
+    await clearAuthData()
     router.push('/login')
     throw new Error("Session expired")
   }

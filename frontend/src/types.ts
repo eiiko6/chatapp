@@ -27,3 +27,10 @@ export interface FriendRequest {
   sender_uuid: string
   sender_username: string
 }
+
+export interface RoomInvite {
+  room_uuid: string
+  room_name: string
+  sender_uuid: string
+  sender_username: string
+}

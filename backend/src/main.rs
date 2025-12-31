@@ -2,17 +2,36 @@ use axum::{
     Extension, Router,
     http::{Method, header},
 };
-use std::{env::var, net::SocketAddr, time::Duration};
+use clap::Parser;
+use std::{net::SocketAddr, time::Duration};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+};
+use tracing::Level;
 
 mod auth;
 mod db;
 mod realtime;
 mod routes;
 
+#[derive(clap::Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+pub struct Cli {
+    /// Server port
+    #[arg(short, long, default_value = "8080")]
+    port: String,
+
+    /// Verbose mode
+    #[arg(short, long)]
+    verbose: bool,
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let cli = Cli::parse();
+
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
@@ -45,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
 
     let realtime = realtime::Realtime::new();
 
-    let app = Router::new()
+    let mut app = Router::new()
         .merge(routes::users::routes())
         .merge(routes::rooms::routes())
         .merge(routes::messages::routes())
@@ -54,14 +73,17 @@ async fn main() -> anyhow::Result<()> {
         .layer(Extension(db_pool))
         .layer(Extension(realtime))
         .layer(GovernorLayer::new(governor_conf))
-        // .layer(
-        //     TraceLayer::new_for_http()
-        //         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
-        //         .on_response(DefaultOnResponse::new().level(Level::INFO)),
-        // )
         .layer(cors);
 
-    let port = var("CHATAPP_SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
+    if cli.verbose {
+        app = app.layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        );
+    }
+
+    let port = cli.port;
     let addr = format!("0.0.0.0:{port}");
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();

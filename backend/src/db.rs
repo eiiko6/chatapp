@@ -20,8 +20,7 @@ pub async fn room_id_from_uuid(db: &PgPool, room_uuid: Uuid) -> Result<i32, (Sta
         .bind(room_uuid)
         .fetch_one(db)
         .await
-        // FIX: hmm probably the wrong error here
-        .map_err(|_| (StatusCode::UNAUTHORIZED, String::from("Wrong token")))
+        .map_err(|_| (StatusCode::NOT_FOUND, "Failed to find room".into()))
 }
 
 pub async fn username_from_uuid(
@@ -49,4 +48,15 @@ pub async fn id_from_username(db: &PgPool, username: String) -> Result<i32, (Sta
         .fetch_one(db)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "User not found".into()))
+}
+
+pub async fn room_name_from_uuid(
+    db: &PgPool,
+    room_uuid: Uuid,
+) -> Result<String, (StatusCode, String)> {
+    sqlx::query_scalar("SELECT name FROM room_ WHERE uuid = $1")
+        .bind(room_uuid)
+        .fetch_one(db)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "Failed to find room".into()))
 }

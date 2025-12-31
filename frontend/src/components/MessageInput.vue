@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, defineExpose } from 'vue'
+import { ref, nextTick } from 'vue'
 
 const content = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
