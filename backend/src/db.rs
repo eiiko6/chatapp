@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 pub async fn init_db(url: String) -> Result<PgPool, sqlx::Error> {
     let database_url = format!("postgres://chatapp:secret@{url}/chatapp");
-    PgPool::connect(database_url.as_str()).await
+    PgPool::connect_lazy(database_url.as_str())
 }
 
 pub async fn user_id_from_uuid(db: &PgPool, user_uuid: Uuid) -> Result<i32, (StatusCode, String)> {
