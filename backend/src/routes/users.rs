@@ -52,7 +52,7 @@ pub fn routes() -> Router {
 
 async fn registration_guard(req: Request, next: Next) -> Result<Response, StatusCode> {
     if req.uri().path() == "/register"
-        && env::var("CHATAPP_ALLOW_REGISTRATION").map_or(true, |v| v.to_lowercase() == "false")
+        && env::var("CHATAPP_PROHIBIT_REGISTRATION").map_or(false, |v| v.to_lowercase() == "true")
     {
         return Err(StatusCode::FORBIDDEN);
     }

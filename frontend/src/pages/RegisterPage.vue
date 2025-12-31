@@ -1,9 +1,30 @@
+<template>
+  <div class="login-page">
+    <form class="login-card" @submit.prevent="submit">
+      <h1>Register</h1>
+
+      <input v-model="email" type="email" placeholder="email" required />
+      <input v-model="username" placeholder="username" required />
+      <input v-model="password" type="password" placeholder="password" required />
+
+      <button type="submit">Create Account</button>
+
+      <p class="login-link">
+        Already have an account? <router-link to="/login">Login</router-link>
+      </p>
+
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+    </form>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from "vue";
-import { login } from '../store.ts'
+import { register } from '../store.ts'
 import { useRouter } from "vue-router";
 
 const email = ref("");
+const username = ref("");
 const password = ref("");
 const errorMessage = ref("");
 
@@ -12,32 +33,14 @@ const router = useRouter();
 async function submit() {
   errorMessage.value = "";
   try {
-    await login(email.value, "", password.value);
+    await register(email.value, username.value, password.value);
+
     router.push("/");
   } catch (err: any) {
     errorMessage.value = err?.message || "An unknown error occurred";
   }
 }
 </script>
-
-<template>
-  <div class="login-page">
-    <form class="login-card" @submit.prevent="submit">
-      <h1>Login</h1>
-
-      <input v-model="email" placeholder="email" />
-      <input v-model="password" type="password" placeholder="password" />
-
-      <button type="submit">Login</button>
-
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-
-      <p class="register-link">
-        Don't have an account? <router-link to="/register">Register</router-link>
-      </p>
-    </form>
-  </div>
-</template>
 
 <style scoped>
 .login-page {
@@ -53,7 +56,6 @@ async function submit() {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 2rem;
-
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -66,21 +68,22 @@ async function submit() {
   text-align: center;
 }
 
-.register-link {
-  font-size: 0.9rem;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.register-link a {
-  color: var(--accent);
-  margin-left: 5px;
-}
-
 .error-message {
   color: red;
   font-size: 0.9rem;
   text-align: center;
   margin-top: 0.5rem;
+}
+
+
+.login-link {
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.login-link a {
+  color: var(--accent);
+  margin-left: 5px;
 }
 </style>

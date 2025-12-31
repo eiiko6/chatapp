@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { initAuth, getLastRoom, setLastRoom } from './store'
 
 import LoginPage from './pages/LoginPage.vue'
+import RegisterPage from './pages/RegisterPage.vue'
 import ChatPage from './pages/ChatPage.vue'
 import FriendListPage from './pages/FriendListPage.vue'
 import NofificationsPage from './pages/NotificationsPage.vue'
@@ -17,6 +18,12 @@ const router = createRouter({
       meta: { hideNavbar: true }
     },
     {
+      path: '/register',
+      name: 'register',
+      component: RegisterPage,
+      meta: { hideNavbar: true }
+    },
+    {
       path: '/rooms/:uuid',
       name: 'chat',
       component: ChatPage,
@@ -28,7 +35,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  if (to.path === '/login') return true
+  if (to.path === '/login' || to.path === '/register') return true
 
   const auth = await initAuth()
   if (!auth.isAuthenticated) {

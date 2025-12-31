@@ -41,6 +41,17 @@ export async function validateToken(): Promise<boolean> {
   }
 }
 
+export async function register(email: string, username: string, password: string) {
+  const response: LoginResponse = await apiFetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, username, password })
+  });
+
+  await login(email, username, password)
+  return response;
+}
+
 const requests = ref<FriendRequest[]>([])
 const invites = ref<RoomInvite[]>([])
 
@@ -48,6 +59,11 @@ export function useNotifications() {
   const totalCount = computed(() => requests.value.length + invites.value.length)
 
   async function refreshNotifications() {
+    const auth = await authStore.getAuthData()
+    if (!auth.token) {
+      return
+    }
+
     try {
       const [fReqs, rInvs] = await Promise.all([
         fetchFriendRequests(),
