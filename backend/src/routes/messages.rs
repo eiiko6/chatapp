@@ -77,8 +77,7 @@ async fn list_messages(
     .bind(room_id)
     .fetch_all(&db)
     .await
-    .map_err(|e| {
-        tracing::error!("failed to list messages: {e}");
+    .map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Failed to list messages".into(),
@@ -128,12 +127,7 @@ async fn create_message(
     .bind(&payload.content)
     .fetch_one(&db)
     .await
-    .map_err(|e| {
-        (
-            StatusCode::BAD_REQUEST,
-            format!("Could not create message: {e}"),
-        )
-    })?;
+    .map_err(|_| (StatusCode::BAD_REQUEST, "Could not create message".into()))?;
 
     let sender_name = username_from_uuid(&db, claims.sub).await?;
 

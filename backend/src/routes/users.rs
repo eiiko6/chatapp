@@ -112,8 +112,12 @@ pub async fn register_user(
         ));
     }
 
-    let password_hash =
-        hash_password(&payload.password).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    let password_hash = hash_password(&payload.password).map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to hash password".into(),
+        )
+    })?;
 
     let user_uuid = uuid::Uuid::now_v7();
 
