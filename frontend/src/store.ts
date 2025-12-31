@@ -1,6 +1,10 @@
 import { apiFetch } from './api/client'
 import type { LoginResponse, User } from './types'
 import * as authStore from './authStore'
+import { ref, computed } from 'vue'
+import { fetchFriendRequests } from './api/friends'
+import { fetchRoomInvites } from './api/rooms'
+import type { FriendRequest, RoomInvite } from './types'
 
 export const initAuth = authStore.getAuthData
 export const getLastRoom = authStore.getLastRoom
@@ -34,5 +38,32 @@ export async function validateToken(): Promise<boolean> {
     return true
   } catch (e) {
     return false
+  }
+}
+
+const requests = ref<FriendRequest[]>([])
+const invites = ref<RoomInvite[]>([])
+
+export function useNotifications() {
+  const totalCount = computed(() => requests.value.length + invites.value.length)
+
+  async function refreshNotifications() {
+    try {
+      const [fReqs, rInvs] = await Promise.all([
+        fetchFriendRequests(),
+        fetchRoomInvites()
+      ])
+      requests.value = fReqs
+      invites.value = rInvs
+    } catch (err) {
+      console.error("Failed to fetch notifications", err)
+    }
+  }
+
+  return {
+    requests,
+    invites,
+    totalCount,
+    refreshNotifications
   }
 }

@@ -35,13 +35,13 @@
 import { onMounted, ref } from 'vue'
 import { fetchFriendRequests, acceptFriendRequest } from '../api/friends'
 import { fetchRoomInvites, acceptRoomInvite } from '../api/rooms.ts'
-import type { FriendRequest, RoomInvite } from '../types'
+import { useNotifications } from '../store'
 
-const requests = ref<FriendRequest[]>([])
-const invites = ref<RoomInvite[]>([])
 const errorMessage = ref('')
+const { requests, invites, refreshNotifications } = useNotifications()
 
 onMounted(async () => {
+  await refreshNotifications()
   requests.value = await fetchFriendRequests()
   invites.value = await fetchRoomInvites()
 })

@@ -11,6 +11,7 @@
 
       <router-link to="/notifications" class="nav-item">
         <i class="fa-solid fa-bell"></i>
+        <span v-if="totalCount > 0" class="badge">{{ totalCount }}</span>
       </router-link>
 
       <button class="nav-item logout" @click="logout">
@@ -22,27 +23,32 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { onMounted } from 'vue'
 import { logout as authLogout } from '../store.ts'
+import { useNotifications } from '../store'
 
 const router = useRouter()
+const { totalCount, refreshNotifications } = useNotifications()
 
 function logout() {
   authLogout()
   router.push('/login')
 }
+
+onMounted(() => {
+  refreshNotifications()
+})
 </script>
 
 <style scoped>
 #bottom-nav {
   display: flex;
   gap: 28px;
-
   padding: 5px 22px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 100vh;
   z-index: 50;
-
   user-select: none;
   -webkit-user-select: none;
 
@@ -50,18 +56,16 @@ function logout() {
 
 .nav-item {
   all: unset;
-  cursor: pointer;
 
+  position: relative;
+  cursor: pointer;
   width: 44px;
   height: 44px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 1.25rem;
-  border-radius: 50%;
-
+  border-radius: 100vh;
   transition:
     color 0.2s ease,
     background-color 0.2s ease,
@@ -73,6 +77,25 @@ function logout() {
     color 0.2s ease,
     background-color 0.2s ease,
     transform 0.15s ease;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: var(--accent);
+  color: black;
+  font-size: 0.65rem;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 2px solid var(--panel);
+  pointer-events: none;
 }
 
 @media (hover: hover) {
