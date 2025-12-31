@@ -1,5 +1,5 @@
 import { apiFetch } from './api/client'
-import type { LoginResponse } from './types'
+import type { LoginResponse, User } from './types'
 import * as authStore from './authStore'
 
 export const initAuth = authStore.getAuthData
@@ -12,7 +12,11 @@ export async function login(email: string, username: string, password: string) {
     body: JSON.stringify({ email, username, password }),
   })
 
-  await authStore.saveAuthData(res.token, res.uuid)
+  let user: User = {
+    uuid: res.uuid,
+    username: username
+  };
+  await authStore.saveAuthData(res.token, user)
   return { token: res.token, uuid: res.uuid, isAuthenticated: true }
 }
 

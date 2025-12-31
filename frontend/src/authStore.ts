@@ -1,4 +1,5 @@
 import { load, Store } from '@tauri-apps/plugin-store'
+import { User } from './types'
 
 let store: Store | null = null
 
@@ -10,21 +11,22 @@ async function getStore() {
 export async function getAuthData() {
   const s = await getStore()
   const token = await s.get<string>('token')
-  const uuid = await s.get<string>('uuid')
-  return { token: token || null, uuid: uuid || null, isAuthenticated: !!token }
+  const user = await s.get<User>('user')
+  return { token: token || null, user: user || null, isAuthenticated: !!token }
 }
 
-export async function saveAuthData(token: string, uuid: string) {
+export async function saveAuthData(token: string, user: User) {
   const s = await getStore()
   await s.set('token', token)
-  await s.set('uuid', uuid)
+  await s.set('user', user)
   await s.save()
 }
 
 export async function clearAuthData() {
   const s = await getStore()
   await s.delete('token')
-  await s.delete('uuid')
+  await s.delete('user')
+  await s.delete('last_room_uuid')
   await s.save()
 }
 

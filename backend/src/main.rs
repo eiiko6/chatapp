@@ -1,7 +1,12 @@
 use axum::{
     Extension, Router,
-    http::{Method, header},
+    http::{
+        Method,
+        header::{self, CONTENT_TYPE},
+    },
+    middleware,
 };
+use axum::{body::Body, extract::Request, middleware::Next, response::Response};
 use clap::Parser;
 use std::{net::SocketAddr, time::Duration};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
@@ -10,6 +15,7 @@ use tower_http::{
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
 };
 use tracing::Level;
+use tracing::info;
 
 mod auth;
 mod db;
@@ -46,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
 
     let governor_conf = GovernorConfigBuilder::default()
         .burst_size(15)
-        .per_millisecond(500)
+        .per_millisecond(250)
         .finish()
         .unwrap();
 
@@ -76,11 +82,13 @@ async fn main() -> anyhow::Result<()> {
         .layer(cors);
 
     if cli.verbose {
-        app = app.layer(
-            TraceLayer::new_for_http()
-                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
-                .on_response(DefaultOnResponse::new().level(Level::INFO)),
-        );
+        app = app
+            .layer(
+                TraceLayer::new_for_http()
+                    .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                    .on_response(DefaultOnResponse::new().level(Level::INFO)),
+            )
+            .layer(middleware::from_fn(log_json_body));
     }
 
     let port = cli.port;
@@ -97,4 +105,39 @@ async fn main() -> anyhow::Result<()> {
     .unwrap();
 
     Ok(())
+}
+
+#[cfg(debug_assertions)]
+async fn log_json_body(req: Request, next: Next) -> Response {
+    let (parts, body) = req.into_parts();
+
+    // Check if the content type is JSON
+    let is_json = parts
+        .headers
+        .get(CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .map_or(false, |v| v.contains("application/json"));
+
+    let bytes = if is_json {
+        // Read the body bytes
+        let bytes = axum::body::to_bytes(body, usize::MAX)
+            .await
+            .unwrap_or_default();
+
+        // Log the body (converting to string)
+        if let Ok(body_str) = std::str::from_utf8(&bytes) {
+            info!("JSON Request Body: {}", body_str);
+        }
+        bytes
+    } else {
+        // If not JSON, we still need to collect it or just pass it through
+        axum::body::to_bytes(body, usize::MAX)
+            .await
+            .unwrap_or_default()
+    };
+
+    // Reconstruct the request with the bytes we read
+    let req = Request::from_parts(parts, Body::from(bytes));
+
+    next.run(req).await
 }

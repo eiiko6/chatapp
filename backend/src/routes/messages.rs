@@ -54,7 +54,7 @@ async fn list_messages(
 
     if !is_member(user_id, room_id, &db).await {
         return Err((
-            StatusCode::UNAUTHORIZED,
+            StatusCode::FORBIDDEN,
             String::from("You are not a member of this room"),
         ));
     }

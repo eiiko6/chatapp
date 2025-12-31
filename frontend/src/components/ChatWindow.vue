@@ -1,4 +1,6 @@
 <template>
+  <InvitePeopleModal v-if="showInviteModal" :room_uuid=props.uuid @close="showInviteModal = false" />
+
   <div v-if="uuid === 'none'" class="no-room">
     <div class="empty-state">
       <i class="fa-solid fa-comments"></i>
@@ -12,27 +14,44 @@
     </div>
 
     <div class="input-container">
+      <button v-if="isOwner && !currentRoom?.global" class="invite-btn" @click="showInviteModal = true"
+        title="Invite people">
+        <i class="fa-solid fa-users"></i>
+      </button>
+
       <MessageInput ref="messageInputRef" @send="onSend" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from "vue";
 import { fetchMessages, sendMessage, getWsToken } from "../api/messages";
-import type { Message } from "../types";
+import type { Message, Room, User } from "../types";
 import { API_WS } from '../main.ts';
 import MessageList from "./MessageList.vue";
 import MessageInput from "./MessageInput.vue";
+import InvitePeopleModal from './InvitePeopleModal.vue';
 
 import WebSocket from '@tauri-apps/plugin-websocket';
+import { getAuthData } from "../authStore.ts";
+import { fetchRoomInfo } from "../api/rooms.ts";
 
 const props = defineProps<{ uuid: string }>();
 const messages = ref<Message[]>([]);
 const messageListRef = ref<HTMLElement | null>(null);
 const messageInputRef = ref<InstanceType<typeof MessageInput> | null>(null);
+const currentUser = ref<User | null>(null);
+const currentRoom = ref<Room | null>(null);
+
+const showInviteModal = ref(false);
 
 let socket: WebSocket | null = null;
+
+const isOwner = computed(() => {
+  if (!currentUser.value || !currentRoom.value) return false;
+  return currentUser.value.uuid === currentRoom.value.owner_uuid;
+});
 
 const handleGlobalKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
@@ -51,24 +70,33 @@ async function initializeRoom() {
     socket = null;
   }
 
-  messages.value = [];
+  // messages.value = [];
+  currentRoom.value = null;
 
   if (props.uuid === 'none') return;
 
   try {
-    messages.value = await fetchMessages(props.uuid);
+    // 5. Fetch Room Details and Messages in parallel
+    const [msgs, roomInfo, auth] = await Promise.all([
+      fetchMessages(props.uuid),
+      fetchRoomInfo(props.uuid),
+      getAuthData()
+    ]);
+
+    messages.value = msgs;
+    currentRoom.value = roomInfo;
+    currentUser.value = auth.user;
+
     await nextTick();
     scrollToBottom();
 
     const wsToken = await getWsToken(props.uuid);
-
     const url = `${API_WS}/rooms/${props.uuid}?token=${wsToken}`;
     socket = await WebSocket.connect(url);
 
     socket.addListener((msg) => {
       if (msg.type === 'Text') {
         const data: Message = JSON.parse(msg.data);
-
         if (!messages.value.some(m => m.uuid === data.uuid)) {
           messages.value.push(data);
           nextTick().then(scrollToBottom);
@@ -76,9 +104,8 @@ async function initializeRoom() {
       }
     });
 
-    console.log("WebSocket Connected successfully via Rust layer");
   } catch (err) {
-    console.error("WebSocket connection failed:", err);
+    console.error("Room initialization failed:", err);
   }
 }
 
@@ -124,9 +151,33 @@ onUnmounted(async () => {
 }
 
 .input-container {
-  padding: 1rem;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 10px;
   border-top: 1px solid var(--border);
 }
+
+/* Ensure the MessageInput component expands to fill the width */
+:deep(.input-container > *:last-child) {
+  flex: 1;
+}
+
+.invite-btn {
+  margin: 0;
+  padding: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  border: none;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 .no-room {
   height: 100%;

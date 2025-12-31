@@ -1,3 +1,8 @@
+export interface User {
+  uuid: string
+  username: string
+}
+
 export interface LoginResponse {
   uuid: string
   token: string
@@ -5,9 +10,10 @@ export interface LoginResponse {
 
 export interface Room {
   uuid: string
-  owner_name: number
+  owner_name: string
+  owner_uuid: string
   name: string
-  globa: boolean
+  global: boolean
 }
 
 export interface Message {

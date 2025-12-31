@@ -5,6 +5,10 @@ export function fetchRooms() {
   return apiFetch<Room[]>(`/rooms`)
 }
 
+export function fetchRoomInfo(uuid: string) {
+  return apiFetch<Room>(`/rooms/${uuid}`)
+}
+
 export function createRoom(name: string, global: boolean) {
   return apiFetch<Room>('/rooms', {
     method: 'POST',

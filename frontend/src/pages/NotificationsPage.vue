@@ -63,6 +63,7 @@ async function acceptRoom(senderUuid: string, roomUuid: string) {
     // fetchFriends().then(f => (friends.value = f))
   } catch (err) {
     errorMessage.value = 'An error occurred while accepting the invite.' // TODO: handle this case
+    throw err
   }
 }
 </script>

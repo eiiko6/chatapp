@@ -12,7 +12,7 @@
 
     <div v-if="isSidebarOpen" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
 
-    <main class="chat-window-container">
+    <main class="chat-window-container" :class="{ 'sidebar-is-open': isSidebarOpen }">
       <ChatWindow :uuid="uuid" />
     </main>
   </div>
@@ -97,6 +97,12 @@ const handleRoomSelection = () => {
 
 .menu-toggle i {
   font-size: 1.6rem;
+}
+
+@media (min-width: 721px) {
+  .chat-window-container.sidebar-is-open {
+    padding-left: 0;
+  }
 }
 
 @media (max-width: 720px) {

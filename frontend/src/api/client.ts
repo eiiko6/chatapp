@@ -19,7 +19,7 @@ export async function apiFetch<T>(
     },
   })
 
-  if (res.status === 401) {
+  if (res.status === 401 && auth.token) {
     await clearAuthData()
     router.push('/login')
     throw new Error("Session expired")

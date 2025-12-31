@@ -2,7 +2,8 @@
   <div class="room-list">
     <header class="rooms-header">
       <h2>Rooms</h2>
-      <button class="create-btn" @click="showCreate = true"><i class="fa-solid fa-plus"></i></button>
+      <button class="create-btn" @click="showCreate = true" title="Create a room"><i
+          class="fa-solid fa-plus"></i></button>
     </header>
 
     <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
@@ -22,7 +23,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { initAuth } from '../store.ts';
 import { fetchRooms } from '../api/rooms';
 import type { Room } from '../types';
 import CreateRoomModal from './CreateRoomModal.vue';
@@ -34,8 +34,7 @@ const rooms = ref<Room[]>([]);
 const emit = defineEmits(['select-room']);
 
 onMounted(async () => {
-  const auth = await initAuth();
-  rooms.value = await fetchRooms(auth.uuid!);
+  rooms.value = await fetchRooms();
 });
 </script>
 

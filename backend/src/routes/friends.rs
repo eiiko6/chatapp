@@ -140,7 +140,12 @@ async fn send_request(
         .bind(receiver_id)
         .execute(&db)
         .await
-        .map_err(|_| (StatusCode::CONFLICT, "Request already exists".into()))?;
+        .map_err(|_| {
+            (
+                StatusCode::CONFLICT,
+                "You have already send a friend request to this user".into(),
+            )
+        })?;
 
     Ok((
         StatusCode::CREATED,

@@ -13,9 +13,10 @@ use crate::{auth::verify_jwt, db::room_id_from_uuid};
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Room {
     pub uuid: Uuid,
-    pub owner_name: String,
     pub name: String,
     pub global: bool,
+    pub owner_name: String,
+    pub owner_uuid: Uuid,
 }
 
 #[derive(serde::Deserialize)]
@@ -89,6 +90,7 @@ async fn list_rooms(
         r#"
         SELECT r.uuid,
                u.username AS owner_name,
+               u.uuid AS owner_uuid,
                r.name,
                r.global
         FROM room_ r
@@ -152,6 +154,7 @@ async fn create_room(
         Json(Room {
             uuid: room_uuid,
             owner_name,
+            owner_uuid: claims.sub,
             name: payload.name,
             global: payload.global,
         }),
@@ -166,24 +169,40 @@ async fn get_room(
     let claims = verify_jwt(headers)?;
 
     let user_id = user_id_from_uuid(&db, claims.sub).await?;
+    let room_id = room_id_from_uuid(&db, room_uuid).await?;
+
+    if !is_member(user_id, room_id, &db).await {
+        return Err((
+            StatusCode::FORBIDDEN,
+            String::from("You are not a member of this room"),
+        ));
+    }
 
     let room: Room = sqlx::query_as(
         r#"
-        SELECT uuid, u.name AS owner_name, r.name, r.global
+        SELECT
+            r.uuid,
+            u.username AS owner_name,
+            u.uuid AS owner_uuid,
+            r.name,
+            r.global
         FROM room_ r
-        JOIN user u ON u.id = r.owner
-        WHERE uuid = $1 AND owner = $2
+        JOIN user_ u ON u.id = r.owner
+        WHERE r.uuid = $1
         "#,
     )
     .bind(room_uuid)
-    .bind(user_id)
     .fetch_one(&db)
     .await
-    .map_err(|_| (StatusCode::NOT_FOUND, "Room not found".to_string()))?;
+    .map_err(|e| {
+        tracing::error!("{e}");
+        (StatusCode::NOT_FOUND, "Room not found".to_string())
+    })?;
 
     Ok(Json(Room {
         uuid: room_uuid,
         owner_name: room.owner_name,
+        owner_uuid: room.owner_uuid,
         name: room.name,
         global: room.global,
     }))
@@ -269,7 +288,12 @@ async fn send_invite(
         .bind(room_id)
         .execute(&db)
         .await
-        .map_err(|_| (StatusCode::CONFLICT, "Request already exists".into()))?;
+        .map_err(|_| {
+            (
+                StatusCode::CONFLICT,
+                "You have already invited this user".into(),
+            )
+        })?;
 
     tracing::info!("bro");
 
@@ -334,7 +358,12 @@ async fn accept_request(
 
     let room: Room = sqlx::query_as(
         r#"
-        SELECT r.uuid, u.username AS owner_name, r.name, r.global
+        SELECT
+            r.uuid,
+            u.username AS owner_name,
+            u.uuid AS owner_uuid,
+            r.name,
+            r.global
         FROM room_ r
         JOIN user_ u ON u.id = r.owner
         WHERE r.id = $1 AND r.owner = $2
@@ -344,7 +373,12 @@ async fn accept_request(
     .bind(sender_id)
     .fetch_one(&db)
     .await
-    .map_err(|_| (StatusCode::NOT_FOUND, "Room not found".into()))?;
+    .map_err(|_| {
+        (
+            StatusCode::NOT_FOUND,
+            "Room not found or wrong owner".into(),
+        )
+    })?;
 
     tx.commit().await.map_err(|_| {
         (
@@ -358,6 +392,7 @@ async fn accept_request(
         Json(Room {
             uuid: payload.room_uuid,
             owner_name: room.owner_name,
+            owner_uuid: room.owner_uuid,
             name: room.name,
             global: room.global,
         }),
