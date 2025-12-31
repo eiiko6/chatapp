@@ -17,7 +17,7 @@
       in {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = "chatapp";
-          version = "0.2.0";
+          version = "1.0.0";
 
           # Point to the backend subdirectory
           src = ./backend;
