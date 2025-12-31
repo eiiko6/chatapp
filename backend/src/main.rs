@@ -107,7 +107,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[cfg(debug_assertions)]
 async fn log_json_body(req: Request, next: Next) -> Response {
     let (parts, body) = req.into_parts();
 

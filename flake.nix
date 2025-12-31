@@ -1,5 +1,5 @@
 {
-  description = "chatapp";
+  description = "chatapp monorepo";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -19,11 +19,13 @@
           pname = "chatapp";
           version = "0.1.0";
 
-          src = ./.;
-          cargoLock = { lockFile = ./Cargo.lock; };
+          # Point to the backend subdirectory
+          src = ./backend;
+          cargoLock = {
+            lockFile = ./backend/Cargo.lock;
+          };
 
           nativeBuildInputs = [ rust pkgs.pkg-config ];
-
           buildInputs = [ openssl ];
 
           OPENSSL_LIB_DIR = "${openssl.out}/lib";
@@ -32,10 +34,11 @@
         };
 
         devShells.default = pkgs.mkShell {
-          packages =
-            [ rust pkgs.cargo pkgs.rust-analyzer pkgs.pkg-config openssl ];
-          OPENSSL_DIR = openssl.dev;
-          PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
+          packages = [ rust pkgs.cargo pkgs.rust-analyzer pkgs.pkg-config openssl ];
+          shellHook = ''
+            export OPENSSL_DIR=${openssl.dev}
+            export PKG_CONFIG_PATH=${openssl.dev}/lib/pkgconfig
+          '';
         };
       });
 }
