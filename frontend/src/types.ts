@@ -11,6 +11,11 @@ export interface LoginResponse {
   token: string
 }
 
+export interface UpdateUserResponse {
+  username: string
+  email: string
+}
+
 export interface Room {
   uuid: string
   owner_name: string

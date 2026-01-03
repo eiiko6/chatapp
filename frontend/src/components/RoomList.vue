@@ -6,7 +6,9 @@
           class="fa-solid fa-plus"></i></button>
     </header>
 
-    <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
+    <Teleport to="body">
+      <CreateRoomModal v-if="showCreate" @close="showCreate = false" @created="rooms.push($event)" />
+    </Teleport>
 
     <div class="scroll-area">
       <router-link v-for="room in rooms" :key="room.uuid" :to="`/rooms/${room.uuid}`" class="btn room-item"

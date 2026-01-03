@@ -2,11 +2,14 @@
   <div class="account-page">
     <h1>Your Account</h1>
 
+    <UpdateAccountModal v-if="showUpdateModal" :user="user" @close="showUpdateModal = false" @updated="fetchUserData" />
+
     <div v-if="user" class="info-card">
+      <button class="update-btn" @click="showUpdateModal = true">Update</button>
       <p><strong>Username:</strong> {{ user.username }}</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
     </div>
-    <div v-else>
+    <div v-else class="loading-state">
       <p>Loading account details...</p>
     </div>
 
@@ -23,18 +26,22 @@ import { useRouter } from 'vue-router'
 import { logout as authLogout } from '../store.ts'
 import { getAuthData } from "../authStore.ts"
 import type { User } from "../types"
+import UpdateAccountModal from '../components/UpdateAccountModal.vue'
 
 const router = useRouter()
 const user = ref<User | null>(null)
+const showUpdateModal = ref(false)
 
-onMounted(async () => {
+async function fetchUserData() {
   try {
     const auth = await getAuthData()
     user.value = auth.user
   } catch (err) {
     console.error("Failed to load user data:", err)
   }
-})
+}
+
+onMounted(fetchUserData)
 
 function logout() {
   authLogout()
@@ -53,10 +60,17 @@ function logout() {
 }
 
 .info-card {
+  position: relative;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
+}
+
+.update-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
 }
 
 .logout-btn {
@@ -83,5 +97,11 @@ function logout() {
 
 .logout-btn i {
   font-size: 1.25rem;
+}
+
+.loading-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
 }
 </style>

@@ -1,5 +1,5 @@
 import { load, Store } from '@tauri-apps/plugin-store'
-import { User } from './types'
+import { UpdateUserResponse, User } from './types'
 
 let store: Store | null = null
 
@@ -27,6 +27,18 @@ export async function clearAuthData() {
   await s.delete('token')
   await s.delete('user')
   await s.delete('last_room_uuid')
+  await s.save()
+}
+
+export async function updateLocalUser(newData: UpdateUserResponse, uuid?: string) {
+  const updatedUser = {
+    username: newData.username,
+    email: newData.email,
+    uuid
+  }
+
+  const s = await getStore()
+  await s.set('user', updatedUser)
   await s.save()
 }
 

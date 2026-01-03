@@ -95,7 +95,7 @@ async function send() {
 }
 
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 0.9rem;
 }
 

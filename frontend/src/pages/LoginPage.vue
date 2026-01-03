@@ -25,8 +25,15 @@ async function submit() {
     <form class="login-card" @submit.prevent="submit">
       <h1>Login</h1>
 
-      <input v-model="email" placeholder="email" />
-      <input v-model="password" type="password" placeholder="password" />
+      <div class="input-group">
+        <label>Email</label>
+        <input v-model="email" placeholder="email" />
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input v-model="password" type="password" placeholder="password" />
+      </div>
 
       <button type="submit">Login</button>
 
@@ -78,7 +85,7 @@ async function submit() {
 }
 
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 0.9rem;
   text-align: center;
   margin-top: 0.5rem;

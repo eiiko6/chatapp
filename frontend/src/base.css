@@ -24,6 +24,7 @@ body,
   --accent: #f27aa3;
   --accent-hover: #ff91b3;
   --border: #2a2f3b;
+  --error: #ff5050;
   --radius: 8px;
 }
 
@@ -149,6 +150,27 @@ i:hover {
 
 .btn {
   outline: none;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.9rem;
+}
+
+.modal {
+  margin: 30px;
 }
 
 @media (hover: hover) {

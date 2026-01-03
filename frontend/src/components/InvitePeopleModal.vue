@@ -5,7 +5,10 @@
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-      <input v-model="receiverUsername" placeholder="username" autofocus />
+      <div class="input-group">
+        <label>Receiver username</label>
+        <input v-model="receiverUsername" placeholder="username" autofocus />
+      </div>
 
       <label class="checkbox">
         <input type="checkbox" v-model="requestFriend" />
@@ -98,7 +101,7 @@ async function submit() {
 }
 
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 0.9rem;
 }
 

@@ -3,10 +3,21 @@
     <form class="login-card" @submit.prevent="submit" novalidate>
       <h1>Register</h1>
 
-      <input v-model="email" type="email" placeholder="email" required />
-      <input v-model="username" placeholder="username" required />
-      <input v-model="password" type="password" placeholder="password" required />
-      <input v-model="confirmPassword" type="password" placeholder="confirm password" required />
+      <div class="input-group">
+        <label>Email</label>
+        <input v-model="email" type="email" placeholder="email" required />
+      </div>
+
+      <div class="input-group">
+        <label>Username</label>
+        <input v-model="username" placeholder="username" required />
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input v-model="password" type="password" placeholder="password" required />
+        <input v-model="confirmPassword" type="password" placeholder="confirm password" required />
+      </div>
 
       <button type="submit">Create Account</button>
 
@@ -89,7 +100,7 @@ async function submit(event: Event) {
 }
 
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 0.9rem;
   text-align: center;
   margin-top: 0.5rem;
