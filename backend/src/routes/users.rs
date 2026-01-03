@@ -11,7 +11,10 @@ use std::env;
 use uuid::Uuid;
 use validator::ValidateEmail;
 
-use crate::auth::{create_jwt, hash_password, validate_token, verify_password};
+use crate::{
+    auth::{create_jwt, hash_password, validate_token, verify_password},
+    db::username_from_uuid,
+};
 
 const DUMMY_HASH: &str = "$argon2id$v=19$m=4096,t=3,p=1$YWFhYWFhYWFhYWFhYWFhYQ$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
@@ -32,6 +35,8 @@ pub struct LoginPayload {
 #[derive(serde::Serialize)]
 pub struct LoginResponse {
     pub uuid: Uuid,
+    pub username: String,
+    pub email: String,
     pub token: String,
 }
 
@@ -83,9 +88,12 @@ pub async fn login(
     }
 
     let token = create_jwt(user_uuid).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    let username = username_from_uuid(&db, user_uuid).await?;
 
     Ok(Json(LoginResponse {
         uuid: user_uuid,
+        username,
+        email: payload.email,
         token,
     }))
 }
@@ -149,6 +157,8 @@ pub async fn register_user(
         StatusCode::CREATED,
         Json(LoginResponse {
             uuid: user_uuid,
+            username: payload.username,
+            email: payload.email,
             token,
         }),
     ))

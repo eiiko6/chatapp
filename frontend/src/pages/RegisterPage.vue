@@ -1,11 +1,12 @@
 <template>
   <div class="login-page">
-    <form class="login-card" @submit.prevent="submit">
+    <form class="login-card" @submit.prevent="submit" novalidate>
       <h1>Register</h1>
 
       <input v-model="email" type="email" placeholder="email" required />
       <input v-model="username" placeholder="username" required />
       <input v-model="password" type="password" placeholder="password" required />
+      <input v-model="confirmPassword" type="password" placeholder="confirm password" required />
 
       <button type="submit">Create Account</button>
 
@@ -26,15 +27,34 @@ import { useRouter } from "vue-router";
 const email = ref("");
 const username = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 const errorMessage = ref("");
 
 const router = useRouter();
 
-async function submit() {
+async function submit(event: Event) {
   errorMessage.value = "";
+
+  const form = event.target as HTMLFormElement;
+
+  // Check password length and email
+  if (!form.checkValidity()) {
+    if (password.value.length < 8) {
+      errorMessage.value = "Password must be at least 8 characters long";
+    } else {
+      errorMessage.value = "Please enter a valid email address";
+    }
+    return;
+  }
+
+  // Check password match
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = "Passwords do not match";
+    return;
+  }
+
   try {
     await register(email.value, username.value, password.value);
-
     router.push("/");
   } catch (err: any) {
     errorMessage.value = err?.message || "An unknown error occurred";
@@ -74,7 +94,6 @@ async function submit() {
   text-align: center;
   margin-top: 0.5rem;
 }
-
 
 .login-link {
   font-size: 0.9rem;

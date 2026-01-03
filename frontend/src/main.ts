@@ -15,7 +15,7 @@ async function init() {
 
 init()
 
-// export const API = 'http://127.0.0.1:8080'
-export const API = 'https://alatreon.org/chatapp'
-// export const API_WS = 'ws://127.0.0.1:8080/ws'
-export const API_WS = 'wss://alatreon.org/chatapp/ws'
+export const API = 'http://127.0.0.1:8080'
+// export const API = 'https://alatreon.org/chatapp'
+export const API_WS = 'ws://127.0.0.1:8080/ws'
+// export const API_WS = 'wss://alatreon.org/chatapp/ws'

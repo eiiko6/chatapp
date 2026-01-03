@@ -1,3 +1,28 @@
+<template>
+  <div class="backdrop" @click.self="emit('close')">
+    <form class="modal" @submit.prevent="submit">
+      <h2>Create room</h2>
+
+      <input v-model="name" placeholder="Room name" autofocus />
+
+      <label class="checkbox">
+        <input type="checkbox" v-model="global" />
+        <span>Global room</span>
+      </label>
+
+      <div class="actions">
+        <button type="button" @click="emit('close')" class="secondary">
+          Cancel
+        </button>
+
+        <button type="submit">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue'
 import { createRoom } from '../api/rooms'
@@ -19,26 +44,6 @@ async function submit() {
   global.value = false
 }
 </script>
-
-<template>
-  <div class="backdrop" @click.self="emit('close')">
-    <div class="modal">
-      <h2>Create room</h2>
-
-      <input v-model="name" placeholder="Room name" />
-
-      <label class="checkbox">
-        <input type="checkbox" v-model="global" />
-        <span>Global room</span>
-      </label>
-
-      <div class="actions">
-        <button @click="emit('close')" class="secondary">Cancel</button>
-        <button @click="submit">Create</button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .backdrop {

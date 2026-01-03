@@ -18,7 +18,8 @@ export async function login(email: string, username: string, password: string) {
 
   let user: User = {
     uuid: res.uuid,
-    username: username
+    username: res.username,
+    email: res.email
   };
   await authStore.saveAuthData(res.token, user)
   return { token: res.token, uuid: res.uuid, isAuthenticated: true }

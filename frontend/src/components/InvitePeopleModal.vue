@@ -1,11 +1,11 @@
 <template>
   <div class="backdrop" @click.self="emit('close')">
-    <div class="modal">
+    <form class="modal" @submit.prevent="submit">
       <h2>Invite People</h2>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-      <input v-model="receiverUsername" placeholder="username" />
+      <input v-model="receiverUsername" placeholder="username" autofocus />
 
       <label class="checkbox">
         <input type="checkbox" v-model="requestFriend" />
@@ -13,10 +13,15 @@
       </label>
 
       <div class="actions">
-        <button @click="emit('close')" class="secondary">Cancel</button>
-        <button @click="submit">Send</button>
+        <button type="button" @click="emit('close')" class="secondary">
+          Cancel
+        </button>
+
+        <button type="submit">
+          Send
+        </button>
       </div>
-    </div>
+    </form>
   </div>
 </template>
 

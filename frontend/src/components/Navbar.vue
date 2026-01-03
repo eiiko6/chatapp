@@ -14,26 +14,18 @@
         <span v-if="totalCount > 0" class="badge">{{ totalCount }}</span>
       </router-link>
 
-      <button class="nav-item logout" @click="logout">
-        <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
+      <router-link to="/account" class="nav-item">
+        <i class="fa-solid fa-circle-user"></i>
+      </router-link>
     </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import { onMounted } from 'vue'
-import { logout as authLogout } from '../store.ts'
 import { useNotifications } from '../store'
 
-const router = useRouter()
 const { totalCount, refreshNotifications } = useNotifications()
-
-function logout() {
-  authLogout()
-  router.push('/login')
-}
 
 onMounted(() => {
   refreshNotifications()
@@ -106,18 +98,10 @@ onMounted(() => {
   .nav-item:not(.router-link-active):hover i {
     color: var(--text);
   }
-
-  .nav-item.logout:hover i {
-    color: rgba(255, 80, 80, 0.8);
-  }
 }
 
 .router-link-active i {
   color: var(--accent);
-}
-
-.nav-item.logout:hover i {
-  color: rgba(255, 80, 80, 0.8);
 }
 
 @media (max-width: 720px) {

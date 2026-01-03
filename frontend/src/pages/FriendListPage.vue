@@ -3,15 +3,14 @@
     <header class="friends-header">
       <h1>Your friends</h1>
 
-      <!-- Friend Request Form -->
-      <div class="friend-request-form">
+      <form class="friend-request-form" @submit.prevent="send">
         <h3>Add Friend</h3>
         <div class="input-container">
-          <input v-model="username" placeholder="Username" />
-          <button @click="send">Send Request</button>
+          <input v-model="username" placeholder="Username" autofocus />
+          <button type="submit">Send Request</button>
         </div>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      </div>
+      </form>
     </header>
 
     <!-- Friends List -->
@@ -49,6 +48,7 @@ async function send() {
     await sendFriendRequest(username.value)
     username.value = ''
     errorMessage.value = ''
+    friends.value = await fetchFriends()
   } catch (err: any) {
     errorMessage.value = err
   }

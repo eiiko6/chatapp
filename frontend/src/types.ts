@@ -1,10 +1,13 @@
 export interface User {
   uuid: string
   username: string
+  email: string
 }
 
 export interface LoginResponse {
   uuid: string
+  username: string
+  email: string
   token: string
 }
 
