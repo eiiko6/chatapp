@@ -4,7 +4,7 @@
   <div v-if="uuid === 'none'" class="no-room">
     <div class="empty-state">
       <i class="fa-solid fa-comments"></i>
-      <p>Select a room to start talking</p>
+      <p>{{ $t('chat-no-room') }}</p>
     </div>
   </div>
 
@@ -15,7 +15,7 @@
 
     <div class="input-container">
       <button v-if="isOwner && !currentRoom?.global" class="invite-btn" @click="showInviteModal = true"
-        title="Invite people">
+        :title="$t('chat-invite-title')">
         <i class="fa-solid fa-users"></i>
       </button>
 

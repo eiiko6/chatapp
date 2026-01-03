@@ -1,32 +1,31 @@
 <template>
   <div class="notifications-page">
-    <h1>Notifications</h1>
-
+    <h1>{{ $t('notifications-title') }}</h1>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
     <!-- Friend Request List -->
     <div class="list">
-      <h2>Friend Requests</h2>
+      <h2>{{ $t('notifications-friend-requests') }}</h2>
       <ul v-if="requests.length">
         <li v-for="req in requests" :key="req.sender_uuid">
           <span>{{ req.sender_username }}</span>
-          <button @click="acceptFriend(req.sender_uuid)">Accept</button>
+          <button @click="acceptFriend(req.sender_uuid)">{{ $t('notifications-accept') }}</button>
         </li>
       </ul>
-      <p v-else>No pending requests</p>
+      <p v-else>{{ $t('notifications-no-requests') }}</p>
     </div>
 
     <!-- Room Invites List -->
     <div class="list">
-      <h2>Room Invites</h2>
+      <h2>{{ $t('notifications-room-invites') }}</h2>
       <ul v-if="invites.length">
         <li v-for="inv in invites" :key="inv.sender_uuid">
           <span>{{ inv.room_name }}</span>
-          <span>from: {{ inv.sender_username }}</span>
-          <button @click="acceptRoom(inv.sender_uuid, inv.room_uuid)">Join</button>
+          <span>{{ $t('notifications-invite-from', { user: inv.sender_username }) }}</span>
+          <button @click="acceptRoom(inv.sender_uuid, inv.room_uuid)">{{ $t('notifications-join') }}</button>
         </li>
       </ul>
-      <p v-else>No pending invites</p>
+      <p v-else>{{ $t('notifications-no-invites') }}</p>
     </div>
   </div>
 </template>
@@ -36,6 +35,9 @@ import { onMounted, ref } from 'vue'
 import { fetchFriendRequests, acceptFriendRequest } from '../api/friends'
 import { fetchRoomInvites, acceptRoomInvite } from '../api/rooms.ts'
 import { useNotifications } from '../store'
+import { useFluent } from 'fluent-vue';
+
+const { $t } = useFluent();
 
 const errorMessage = ref('')
 const { requests, invites, refreshNotifications } = useNotifications()
@@ -52,7 +54,7 @@ async function acceptFriend(senderUuid: string) {
     requests.value = requests.value.filter(r => r.sender_uuid !== senderUuid)
     // fetchFriends().then(f => (friends.value = f))
   } catch (err) {
-    errorMessage.value = 'An error occurred while accepting the request.' // TODO: handle this case
+    errorMessage.value = $t('notifications-error-friend') // TODO: handle this case
   }
 }
 
@@ -62,7 +64,7 @@ async function acceptRoom(senderUuid: string, roomUuid: string) {
     invites.value = invites.value.filter(r => r.room_uuid !== roomUuid)
     // fetchFriends().then(f => (friends.value = f))
   } catch (err) {
-    errorMessage.value = 'An error occurred while accepting the invite.' // TODO: handle this case
+    errorMessage.value = $t('notifications-error-room') // TODO: handle this case
     throw err
   }
 }

@@ -1,3 +1,8 @@
+<template>
+  <textarea ref="textareaRef" v-model="content" @input="resize" @keydown="handleKeydown" rows="1"
+    :placeholder="$t('chat-input-placeholder')"></textarea>
+</template>
+
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 
@@ -45,11 +50,6 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 </script>
-
-<template>
-  <textarea ref="textareaRef" v-model="content" @input="resize" @keydown="handleKeydown" placeholder="type a message"
-    rows="1"></textarea>
-</template>
 
 <style scoped>
 textarea {

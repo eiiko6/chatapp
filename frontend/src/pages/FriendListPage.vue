@@ -1,21 +1,20 @@
 <template>
   <div class="friends-page">
     <header class="friends-header">
-      <h1>Your friends</h1>
+      <h1>{{ $t('friends-title') }}</h1>
 
       <form class="friend-request-form" @submit.prevent="send">
-        <h3>Add Friend</h3>
+        <h3>{{ $t('friends-add-title') }}</h3>
         <div class="input-container">
-          <input v-model="username" placeholder="Username" autofocus />
-          <button type="submit">Send Request</button>
+          <input v-model="username" :placeholder="$t('auth-username')" autofocus />
+          <button type="submit">{{ $t('friends-send-request') }}</button>
         </div>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </form>
     </header>
 
-    <!-- Friends List -->
     <div class="friends-list">
-      <h2>Your Friends</h2>
+      <h2>{{ $t('friends-list-header') }}</h2>
       <ul>
         <li v-for="friend in friends" :key="friend.uuid">
           {{ friend.username }}

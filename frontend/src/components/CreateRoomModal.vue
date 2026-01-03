@@ -1,22 +1,22 @@
 <template>
   <div class="backdrop" @click.self="emit('close')">
     <form class="modal" @submit.prevent="submit">
-      <h2>Create room</h2>
+      <h2>{{ $t('chat-create-title') }}</h2>
 
-      <input v-model="name" placeholder="Room name" autofocus />
+      <input v-model="name" :placeholder="$t('chat-create-name-placeholder')" autofocus />
 
       <label class="checkbox">
         <input type="checkbox" v-model="global" />
-        <span>Global room</span>
+        <span>{{ $t('chat-create-global') }}</span>
       </label>
 
       <div class="actions">
         <button type="button" @click="emit('close')" class="secondary">
-          Cancel
+          {{ $t('shared-cancel') }}
         </button>
 
         <button type="submit">
-          Create
+          {{ $t('chat-create-submit') }}
         </button>
       </div>
     </form>

@@ -1,27 +1,27 @@
 <template>
   <div class="backdrop" @click.self="emit('close')">
     <form class="modal" @submit.prevent="submit">
-      <h2>Invite People</h2>
+      <h2>{{ $t('chat-invite-title') }}</h2>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
       <div class="input-group">
-        <label>Receiver username</label>
+        <label>{{ $t('chat-invite-receiver') }}</label>
         <input v-model="receiverUsername" placeholder="username" autofocus />
       </div>
 
       <label class="checkbox">
         <input type="checkbox" v-model="requestFriend" />
-        <span>Also send a friend request</span>
+        <span>{{ $t('chat-invite-friend-too') }}</span>
       </label>
 
       <div class="actions">
         <button type="button" @click="emit('close')" class="secondary">
-          Cancel
+          {{ $t('shared-cancel') }}
         </button>
 
         <button type="submit">
-          Send
+          {{ $t('chat-invite-send') }}
         </button>
       </div>
     </form>
@@ -32,6 +32,9 @@
 import { ref } from 'vue'
 import { sendRoomInvite } from '../api/rooms'
 import { sendFriendRequest } from '../api/friends';
+import { useFluent } from 'fluent-vue';
+
+const { $t } = useFluent();
 
 const props = defineProps<{ room_uuid: string }>();
 
@@ -64,8 +67,7 @@ async function submit() {
     emit('close')
 
   } catch (err: any) {
-    console.error(err)
-    errorMessage.value = err?.message || err || 'An error occurred'
+    errorMessage.value = err?.message || err || $t('shared-error');
   }
 }
 </script>

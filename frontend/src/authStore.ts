@@ -53,3 +53,14 @@ export async function getLastRoom(): Promise<string | null> {
   const s = await getStore()
   return (await s.get<string>('last_room_uuid')) ?? null
 }
+
+export async function saveLocalePreference(locale: string) {
+  const s = await getStore()
+  await s.set('language', locale)
+  await s.save()
+}
+
+export async function getLocalePreference(): Promise<string | null> {
+  const s = await getStore()
+  return (await s.get<string>('language')) ?? null
+}

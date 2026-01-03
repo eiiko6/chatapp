@@ -1,28 +1,28 @@
 <template>
   <div class="login-page">
     <form class="login-card" @submit.prevent="submit" novalidate>
-      <h1>Register</h1>
+      <h1>{{ $t('auth-register-title') }}</h1>
 
       <div class="input-group">
-        <label>Email</label>
-        <input v-model="email" type="email" placeholder="email" required />
+        <label>{{ $t('auth-email') }}</label>
+        <input v-model="email" type="email" :placeholder="$t('auth-email').toLowerCase()" required />
       </div>
 
       <div class="input-group">
-        <label>Username</label>
-        <input v-model="username" placeholder="username" required />
+        <label>{{ $t('auth-username') }}</label>
+        <input v-model="username" :placeholder="$t('auth-username').toLowerCase()" required />
       </div>
 
       <div class="input-group">
-        <label>Password</label>
-        <input v-model="password" type="password" placeholder="password" required />
-        <input v-model="confirmPassword" type="password" placeholder="confirm password" required />
+        <label>{{ $t('auth-password') }}</label>
+        <input v-model="password" type="password" :placeholder="$t('auth-password').toLowerCase()" required />
+        <input v-model="confirmPassword" type="password" :placeholder="$t('auth-confirm-password')" required />
       </div>
 
-      <button type="submit">Create Account</button>
+      <button type="submit">{{ $t('auth-register-btn') }}</button>
 
       <p class="login-link">
-        Already have an account? <router-link to="/login">Login</router-link>
+        {{ $t('auth-has-account') }} <router-link to="/login">{{ $t('auth-login-title') }}</router-link>
       </p>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -34,6 +34,9 @@
 import { ref } from "vue";
 import { register } from '../store.ts'
 import { useRouter } from "vue-router";
+import { useFluent } from 'fluent-vue';
+
+const { $t } = useFluent();
 
 const email = ref("");
 const username = ref("");
@@ -51,16 +54,16 @@ async function submit(event: Event) {
   // Check password length and email
   if (!form.checkValidity()) {
     if (password.value.length < 8) {
-      errorMessage.value = "Password must be at least 8 characters long";
+      errorMessage.value = $t('auth-error-password-length');
     } else {
-      errorMessage.value = "Please enter a valid email address";
+      errorMessage.value = $t('auth-error-email-invalid');
     }
     return;
   }
 
   // Check password match
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Passwords do not match";
+    errorMessage.value = $t('auth-error-password-match');
     return;
   }
 

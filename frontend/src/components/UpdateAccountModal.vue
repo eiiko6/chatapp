@@ -1,34 +1,34 @@
 <template>
   <div class="backdrop" @click.self="emit('close')">
     <form class="modal" @submit.prevent="submit">
-      <h2>Update your Account</h2>
-      <p class="subtitle">Only fill in the fields you wish to change.</p>
+      <h2>{{ $t('account-update-modal-title') }}</h2>
+      <p class="subtitle">{{ $t('account-update-subtitle') }}</p>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
       <div class="input-group">
-        <label>Username</label>
-        <input v-model="username" placeholder="New username" autofocus />
+        <label>{{ $t('auth-username') }}</label>
+        <input v-model="username" :placeholder="$t('auth-username')" autofocus />
       </div>
 
       <div class="input-group">
-        <label>Email</label>
-        <input v-model="email" type="email" placeholder="New email" />
+        <label>{{ $t('auth-email') }}</label>
+        <input v-model="email" type="email" :placeholder="$t('auth-email')" />
       </div>
 
       <div class="input-group">
-        <label>New Password</label>
-        <input v-model="password" type="password" placeholder="Leave blank to keep current" />
-        <input v-model="confirmPassword" type="password" placeholder="Confirm new password" />
+        <label>{{ $t('account-new-password') }}</label>
+        <input v-model="password" type="password" placeholder="..." />
+        <input v-model="confirmPassword" type="password" :placeholder="$t('account-new-password-confirm')" />
       </div>
 
       <div class="actions">
         <button type="button" @click="emit('close')" class="secondary" :disabled="isSubmitting">
-          Cancel
+          {{ $t('shared-cancel') }}
         </button>
 
         <button type="submit" :disabled="isSubmitting">
-          {{ isSubmitting ? 'Updating...' : 'Save Changes' }}
+          {{ isSubmitting ? $t('account-updating') : $t('account-update-save') }}
         </button>
       </div>
     </form>
@@ -40,6 +40,9 @@ import { ref } from 'vue'
 import { updateAccount } from '../api/account'
 import { updateLocalUser } from '../authStore'
 import type { User } from '../types'
+import { useFluent } from 'fluent-vue';
+
+const { $t } = useFluent();
 
 const props = defineProps<{ user: User | null }>()
 const emit = defineEmits(['close', 'updated'])
@@ -56,13 +59,13 @@ async function submit() {
   errorMessage.value = ''
 
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Passwords do not match."
+    errorMessage.value = $t('auth-error-password-match')
     return
   }
 
   // Prevent empty submission
   if (!username.value || !email.value) {
-    errorMessage.value = "Username and Email are required."
+    errorMessage.value = $t('account-error-required')
     return
   }
 
@@ -81,7 +84,7 @@ async function submit() {
     emit('updated')
     emit('close')
   } catch (err: any) {
-    errorMessage.value = err?.message || 'Update failed'
+    errorMessage.value = err?.message || $t('account-error-failed')
   } finally {
     isSubmitting.value = false
   }

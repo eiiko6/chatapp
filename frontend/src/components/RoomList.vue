@@ -1,9 +1,10 @@
 <template>
   <div class="room-list">
     <header class="rooms-header">
-      <h2>Rooms</h2>
-      <button class="create-btn" @click="showCreate = true" title="Create a room"><i
-          class="fa-solid fa-plus"></i></button>
+      <h2>{{ $t('chat-room-list-title') }}</h2>
+      <button class="create-btn" @click="showCreate = true" :title="$t('chat-create-title')">
+        <i class="fa-solid fa-plus"></i>
+      </button>
     </header>
 
     <Teleport to="body">
@@ -15,7 +16,7 @@
         :class="{ active: route.params.uuid === room.uuid }" @click="emit('select-room')">
         <div class="room-info">
           <span class="room-name">{{ room.name }}</span>
-          <span class="room-owner">by {{ room.owner_name }}</span>
+          <span class="room-owner">{{ $t('chat-room-owner', { owner: room.owner_name }) }}</span>
         </div>
       </router-link>
     </div>
