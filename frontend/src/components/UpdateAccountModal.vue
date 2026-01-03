@@ -1,8 +1,8 @@
 <template>
   <div class="backdrop" @click.self="emit('close')">
     <form class="modal" @submit.prevent="submit">
-      <h2>{{ $t('account-update-modal-title') }}</h2>
-      <p class="subtitle">{{ $t('account-update-subtitle') }}</p>
+      <h2>{{ $t('settings-account-update-modal-title') }}</h2>
+      <p class="subtitle">{{ $t('settings-account-update-subtitle') }}</p>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
@@ -17,9 +17,9 @@
       </div>
 
       <div class="input-group">
-        <label>{{ $t('account-new-password') }}</label>
-        <input v-model="password" type="password" placeholder="..." />
-        <input v-model="confirmPassword" type="password" :placeholder="$t('account-new-password-confirm')" />
+        <label>{{ $t('settings-new-password') }}</label>
+        <input v-model="password" type="password" :placeholder="$t('settings-new-password')" />
+        <input v-model="confirmPassword" type="password" :placeholder="$t('settings-new-password-confirm')" />
       </div>
 
       <div class="actions">
@@ -28,7 +28,7 @@
         </button>
 
         <button type="submit" :disabled="isSubmitting">
-          {{ isSubmitting ? $t('account-updating') : $t('account-update-save') }}
+          {{ isSubmitting ? $t('settings-updating') : $t('settings-update-save') }}
         </button>
       </div>
     </form>
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { updateAccount } from '../api/account'
+import { updateSettings } from '../api/account'
 import { updateLocalUser } from '../authStore'
 import type { User } from '../types'
 import { useFluent } from 'fluent-vue';
@@ -65,7 +65,7 @@ async function submit() {
 
   // Prevent empty submission
   if (!username.value || !email.value) {
-    errorMessage.value = $t('account-error-required')
+    errorMessage.value = $t('settings-error-required')
     return
   }
 
@@ -73,7 +73,7 @@ async function submit() {
   errorMessage.value = ''
 
   try {
-    const updatedData = await updateAccount(
+    const updatedData = await updateSettings(
       username.value.trim(),
       email.value.trim(),
       password.value
@@ -84,7 +84,7 @@ async function submit() {
     emit('updated')
     emit('close')
   } catch (err: any) {
-    errorMessage.value = err?.message || $t('account-error-failed')
+    errorMessage.value = err?.message || $t('settings-error-failed')
   } finally {
     isSubmitting.value = false
   }

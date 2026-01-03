@@ -6,7 +6,7 @@ import RegisterPage from './pages/RegisterPage.vue'
 import ChatPage from './pages/ChatPage.vue'
 import FriendListPage from './pages/FriendListPage.vue'
 import NofificationsPage from './pages/NotificationsPage.vue'
-import AccountPage from './pages/AccountPage.vue'
+import SettingsPage from './pages/SettingsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -32,7 +32,7 @@ const router = createRouter({
     },
     { path: '/friendlist', component: FriendListPage },
     { path: '/notifications', component: NofificationsPage },
-    { path: '/account', component: AccountPage }
+    { path: '/settings', component: SettingsPage }
   ],
 })
 

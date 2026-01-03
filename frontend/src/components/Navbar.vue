@@ -14,7 +14,7 @@
                 <span v-if="totalCount > 0" class="badge">{{ totalCount }}</span>
             </router-link>
 
-            <router-link to="/account" class="nav-item">
+            <router-link to="/settings" class="nav-item">
                 <i class="fa-solid fa-circle-user"></i>
             </router-link>
         </nav>

@@ -5,7 +5,7 @@ language = English
 nav-chat = Chat
 nav-friends = Friendlist
 nav-notifications = Notifications
-nav-account = Account
+nav-settings = Settings
 
 ## Auth
 auth-login-title = Login
@@ -57,22 +57,23 @@ notifications-invite-from = from: {$user}
 notifications-error-friend = An error occurred while accepting the request.
 notifications-error-room = An error occurred while accepting the invite.
 
-## Account page
-account-title = Your Account
-account-label-username = Username:
-account-label-email = Email:
-account-update-btn = Update
-account-logout-btn = Logout
-account-loading = Loading account details...
-account-update-modal-title = Update your Account
-account-update-subtitle = Only fill in the fields you wish to change.
-account-new-password = New Password
-account-new-password-confirm = Confirm new password
-account-update-save = Save Changes
-account-updating = Updating...
-account-language = Language
-account-error-required = Username and Email are required.
-account-error-failed = Update failed
+## Settings page
+settings-title = Settings
+settings-account = Account
+settings-language = Language
+settings-label-username = Username:
+settings-label-email = Email:
+settings-update-btn = Update
+settings-logout-btn = Logout
+settings-account-loading = Loading account details...
+settings-account-update-modal-title = Update your Account
+settings-account-update-subtitle = Only fill in the fields you wish to change.
+settings-new-password = New Password
+settings-new-password-confirm = Confirm new password
+settings-update-save = Save Changes
+settings-updating = Updating...
+settings-error-required = Username and Email are required.
+settings-error-failed = Update failed
 
 ## Shared
 shared-cancel = Cancel

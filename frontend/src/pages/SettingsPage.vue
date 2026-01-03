@@ -1,20 +1,21 @@
 <template>
-  <div class="account-page">
-    <h1>{{ $t('account-title') }}</h1>
+  <div class="settings-page">
+    <h1>{{ $t('settings-title') }}</h1>
 
     <UpdateAccountModal v-if="showUpdateModal" :user="user" @close="showUpdateModal = false" @updated="fetchUserData" />
 
+    <h2>{{ $t('settings-account') }}</h2>
     <div v-if="user" class="info-card">
-      <button class="update-btn" @click="showUpdateModal = true">{{ $t('account-update-btn') }}</button>
-      <p><strong>{{ $t('account-label-username') }}</strong> {{ user.username }}</p>
-      <p><strong>{{ $t('account-label-email') }}</strong> {{ user.email }}</p>
+      <button class="update-btn" @click="showUpdateModal = true">{{ $t('settings-update-btn') }}</button>
+      <p><strong>{{ $t('settings-label-username') }}</strong> {{ user.username }}</p>
+      <p><strong>{{ $t('settings-label-email') }}</strong> {{ user.email }}</p>
     </div>
     <div v-else class="loading-state">
-      <p>{{ $t('account-loading') }}</p>
+      <p>{{ $t('settings-loading') }}</p>
     </div>
 
+    <h2>{{ $t('settings-language') }}</h2>
     <div class="input-group">
-      <span>{{ $t('account-language') }}</span>
       <div class="lang-grid">
         <button v-for="lang in languages" :key="lang.code" class="lang-btn"
           :class="{ active: currentLang === lang.code }" @click="changeLanguage(lang.code)">
@@ -25,7 +26,7 @@
 
     <button class="logout-btn" @click="logout">
       <i class="fa-solid fa-right-from-bracket"></i>
-      <span>{{ $t('account-logout-btn') }}</span>
+      <span>{{ $t('settings-logout-btn') }}</span>
     </button>
   </div>
 </template>
@@ -79,13 +80,17 @@ function logout() {
 </script>
 
 <style scoped>
-.account-page {
+.settings-page {
   max-width: 720px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
+}
+
+h2 {
+  margin-top: 20px;
 }
 
 .info-card {
@@ -127,6 +132,7 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 30px;
   padding: 10px 20px;
   color: var(--text);
   background-color: transparent;

@@ -5,7 +5,7 @@ language = Français
 nav-chat = Messagerie
 nav-friends = Amis
 nav-notifications = Notifications
-nav-account = Compte
+nav-settings = Compte
 
 ## Auth
 auth-login-title = Connexion
@@ -56,22 +56,23 @@ notifications-invite-from = de : {$user}
 notifications-error-friend = Erreur lors de l'acceptation de la demande.
 notifications-error-room = Erreur lors de l'acceptation de l'invitation.
 
-## Account page
-account-title = Votre Compte
-account-label-username = Nom d'utilisateur :
-account-label-email = Email :
-account-update-btn = Modifier
-account-logout-btn = Déconnexion
-account-loading = Chargement du compte...
-account-update-modal-title = Modifier votre compte
-account-update-subtitle = Remplissez uniquement ce que vous souhaitez changer.
-account-new-password = Nouveau mot de passe
-account-new-password-confirm = Confirmer le mot de passe
-account-update-save = Enregistrer
-account-updating = Mise à jour...
-account-language = Langue
-account-error-required = Le nom d'utilisateur et l'email sont requis.
-account-error-failed = Échec de la mise à jour
+## Settings page
+settings-title = Paramètres
+settings-account = Compte
+settings-language = Langue
+settings-label-username = Nom d'utilisateur :
+settings-label-email = Email :
+settings-update-btn = Modifier
+settings-logout-btn = Déconnexion
+settings-account-loading = Chargement du compte...
+settings-account-update-modal-title = Modifier votre compte
+settings-account-update-subtitle = Remplissez uniquement ce que vous souhaitez changer.
+settings-new-password = Nouveau mot de passe
+settings-new-password-confirm = Confirmer le mot de passe
+settings-update-save = Enregistrer
+settings-updating = Mise à jour...
+settings-error-required = Le nom d'utilisateur et l'email sont requis.
+settings-error-failed = Échec de la mise à jour
 
 ## Shared
 shared-cancel = Annuler

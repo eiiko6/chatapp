@@ -22,7 +22,7 @@
       <button type="submit">{{ $t('auth-register-btn') }}</button>
 
       <p class="login-link">
-        {{ $t('auth-has-account') }} <router-link to="/login">{{ $t('auth-login-title') }}</router-link>
+        {{ $t('auth-has-settings') }} <router-link to="/login">{{ $t('auth-login-title') }}</router-link>
       </p>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
