@@ -25,10 +25,22 @@ export async function apiFetch<T>(
     throw new Error("Session expired")
   }
 
+  // Handle error responses
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || res.statusText)
   }
 
-  return res.json() as Promise<T>
+  // Get the response as text first
+  const responseText = await res.text()
+
+  if (!responseText) {
+    return {} as T
+  }
+
+  try {
+    return JSON.parse(responseText) as T
+  } catch (e) {
+    return responseText as unknown as T
+  }
 }

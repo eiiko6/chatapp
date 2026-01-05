@@ -31,12 +31,18 @@ pub struct AcceptFriendRequestPayload {
     pub sender_uuid: Uuid,
 }
 
+#[derive(serde::Deserialize)]
+pub struct DeclineFriendRequestPayload {
+    pub sender_uuid: Uuid,
+}
+
 pub fn routes() -> Router {
     Router::new()
         .route("/friends", get(list_friends))
         .route("/friends/requests", get(list_requests))
         .route("/friends/request", post(send_request))
         .route("/friends/accept", post(accept_request))
+        .route("/friends/decline", post(decline_request))
 }
 
 async fn list_friends(
@@ -216,4 +222,40 @@ async fn accept_request(
             username: username_from_uuid(&db, payload.sender_uuid).await?,
         }),
     ))
+}
+
+async fn decline_request(
+    headers: HeaderMap,
+    Extension(db): Extension<PgPool>,
+    Json(payload): Json<DeclineFriendRequestPayload>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    let claims = verify_jwt(headers)?;
+
+    let receiver_id = user_id_from_uuid(&db, claims.sub).await?;
+    let sender_id = user_id_from_uuid(&db, payload.sender_uuid).await?;
+
+    let rows = sqlx::query(
+        r#"
+        DELETE FROM friend_request_
+        WHERE sender = $1 AND receiver = $2
+        OR sender = $2 AND receiver = $1
+        "#,
+    )
+    .bind(sender_id)
+    .bind(receiver_id)
+    .execute(&db)
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Could not decline friend request".into(),
+        )
+    })?
+    .rows_affected();
+
+    if rows == 0 {
+        return Err((StatusCode::NOT_FOUND, "No such request".into()));
+    }
+
+    Ok(StatusCode::CREATED)
 }

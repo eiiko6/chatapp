@@ -22,3 +22,10 @@ export function acceptFriendRequest(senderUuid: string) {
     body: JSON.stringify({ sender_uuid: senderUuid }),
   })
 }
+
+export function declineFriendRequest(senderUuid: string) {
+  return apiFetch<void>('/friends/decline', {
+    method: 'POST',
+    body: JSON.stringify({ sender_uuid: senderUuid }),
+  })
+}

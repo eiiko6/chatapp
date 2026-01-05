@@ -33,3 +33,10 @@ export function acceptRoomInvite(senderUuid: string, roomUuid: string) {
     body: JSON.stringify({ sender_uuid: senderUuid, room_uuid: roomUuid }),
   })
 }
+
+export function declineRoomInvite(senderUuid: string, roomUuid: string) {
+  return apiFetch<void>('/rooms/decline', {
+    method: 'POST',
+    body: JSON.stringify({ sender_uuid: senderUuid, room_uuid: roomUuid }),
+  })
+}

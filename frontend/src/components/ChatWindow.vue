@@ -9,6 +9,8 @@
   </div>
 
   <div v-else class="chat-container">
+    <!-- <h2 class="room-name">{{ currentRoom?.name }}</h2> -->
+
     <div class="messages-container" ref="messageListRef" @scroll="handleScroll">
       <MessageList :messages="messages" />
     </div>
@@ -217,6 +219,11 @@ onUnmounted(async () => {
 :deep(.input-container > *:last-child) {
   flex: 1;
 }
+
+/* .room-name { */
+/*   margin: 15px 0; */
+/*   text-align: center; */
+/* } */
 
 .loading-more {
   text-align: center;

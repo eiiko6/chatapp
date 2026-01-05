@@ -53,10 +53,13 @@ notifications-room-invites = Room Invites
 notifications-no-requests = No pending requests
 notifications-no-invites = No pending invites
 notifications-accept = Accept
+notifications-decline = Decline
 notifications-join = Join
 notifications-invite-from = from: {$user}
-notifications-error-friend = An error occurred while accepting the request.
-notifications-error-room = An error occurred while accepting the invite.
+notifications-error-friend-accept = An error occurred while accepting the request.
+notifications-error-friend-decline = An error occurred while declining the request.
+notifications-error-room-accept = An error occurred while accepting the invite.
+notifications-error-room-decline = An error occurred while declining the invite.
 
 ## Settings page
 settings-title = Settings

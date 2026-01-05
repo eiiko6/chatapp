@@ -9,7 +9,11 @@
       <ul v-if="requests.length">
         <li v-for="req in requests" :key="req.sender_uuid">
           <span>{{ req.sender_username }}</span>
-          <button @click="acceptFriend(req.sender_uuid)">{{ $t('notifications-accept') }}</button>
+          <div class="actions">
+            <button @click="acceptFriend(req.sender_uuid)">{{ $t('notifications-accept') }}</button>
+            <button class="decline-btn" @click="declineFriend(req.sender_uuid)">{{ $t('notifications-decline')
+            }}</button>
+          </div>
         </li>
       </ul>
       <p v-else>{{ $t('notifications-no-requests') }}</p>
@@ -22,7 +26,11 @@
         <li v-for="inv in invites" :key="inv.sender_uuid">
           <span>{{ inv.room_name }}</span>
           <span>{{ $t('notifications-invite-from', { user: inv.sender_username }) }}</span>
-          <button @click="acceptRoom(inv.sender_uuid, inv.room_uuid)">{{ $t('notifications-join') }}</button>
+          <div class="actions">
+            <button @click="acceptRoom(inv.sender_uuid, inv.room_uuid)">{{ $t('notifications-join') }}</button>
+            <button class="decline-btn" @click="declineRoom(inv.sender_uuid, inv.room_uuid)">{{
+              $t('notifications-decline') }}</button>
+          </div>
         </li>
       </ul>
       <p v-else>{{ $t('notifications-no-invites') }}</p>
@@ -32,8 +40,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchFriendRequests, acceptFriendRequest } from '../api/friends'
-import { fetchRoomInvites, acceptRoomInvite } from '../api/rooms.ts'
+import { fetchFriendRequests, acceptFriendRequest, declineFriendRequest } from '../api/friends'
+import { fetchRoomInvites, acceptRoomInvite, declineRoomInvite } from '../api/rooms.ts'
 import { useNotifications } from '../store'
 import { useFluent } from 'fluent-vue';
 
@@ -54,7 +62,17 @@ async function acceptFriend(senderUuid: string) {
     requests.value = requests.value.filter(r => r.sender_uuid !== senderUuid)
     // fetchFriends().then(f => (friends.value = f))
   } catch (err) {
-    errorMessage.value = $t('notifications-error-friend') // TODO: handle this case
+    errorMessage.value = $t('notifications-error-friend-accept')
+  }
+}
+
+async function declineFriend(senderUuid: string) {
+  try {
+    await declineFriendRequest(senderUuid)
+    requests.value = requests.value.filter(r => r.sender_uuid !== senderUuid)
+    // fetchFriends().then(f => (friends.value = f))
+  } catch (err) {
+    errorMessage.value = $t('notifications-error-friend-decline')
   }
 }
 
@@ -62,9 +80,18 @@ async function acceptRoom(senderUuid: string, roomUuid: string) {
   try {
     await acceptRoomInvite(senderUuid, roomUuid)
     invites.value = invites.value.filter(r => r.room_uuid !== roomUuid)
-    // fetchFriends().then(f => (friends.value = f))
   } catch (err) {
-    errorMessage.value = $t('notifications-error-room') // TODO: handle this case
+    errorMessage.value = $t('notifications-error-room-accept')
+    throw err
+  }
+}
+
+async function declineRoom(senderUuid: string, roomUuid: string) {
+  try {
+    await declineRoomInvite(senderUuid, roomUuid)
+    invites.value = invites.value.filter(r => r.room_uuid !== roomUuid)
+  } catch (err) {
+    errorMessage.value = $t('notifications-error-room-decline')
     throw err
   }
 }
@@ -142,6 +169,17 @@ async function acceptRoom(senderUuid: string, roomUuid: string) {
 .list h2 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
+}
+
+.decline-btn {
+  color: var(--text);
+  background-color: transparent;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.decline-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 720px) {

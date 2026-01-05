@@ -53,6 +53,7 @@ pub fn routes() -> Router {
         .route("/rooms/invites", get(list_invites))
         .route("/rooms/invite", post(send_invite))
         .route("/rooms/join", post(accept_request))
+        .route("/rooms/decline", post(decline_request))
 }
 
 pub async fn is_member(user_id: i32, room_id: i32, db: &Pool<Postgres>) -> bool {
@@ -397,4 +398,39 @@ async fn accept_request(
             global: room.global,
         }),
     ))
+}
+
+async fn decline_request(
+    headers: HeaderMap,
+    Extension(db): Extension<PgPool>,
+    Json(payload): Json<AcceptRoomInvitePayload>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    let claims = verify_jwt(headers)?;
+
+    let receiver_id = user_id_from_uuid(&db, claims.sub).await?;
+    let sender_id = user_id_from_uuid(&db, payload.sender_uuid).await?;
+
+    let rows = sqlx::query(
+        r#"
+        DELETE FROM room_invite_
+        WHERE sender = $1 AND receiver = $2
+        "#,
+    )
+    .bind(sender_id)
+    .bind(receiver_id)
+    .execute(&db)
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Could not decline the room invite".into(),
+        )
+    })?
+    .rows_affected();
+
+    if rows == 0 {
+        return Err((StatusCode::NOT_FOUND, "No such invite".into()));
+    }
+
+    Ok(StatusCode::CREATED)
 }
