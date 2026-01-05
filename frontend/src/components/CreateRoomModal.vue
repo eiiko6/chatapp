@@ -3,7 +3,10 @@
     <form class="modal" @submit.prevent="submit">
       <h2>{{ $t('chat-create-title') }}</h2>
 
-      <input v-model="name" :placeholder="$t('chat-create-name-placeholder')" autofocus />
+      <div class="input-group">
+        <label>{{ $t('chat-create-name') }}</label>
+        <input v-model="name" :placeholder="$t('chat-create-name-placeholder')" autofocus />
+      </div>
 
       <label class="checkbox">
         <input type="checkbox" v-model="global" />

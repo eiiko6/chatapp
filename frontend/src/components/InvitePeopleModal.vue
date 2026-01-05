@@ -7,7 +7,7 @@
 
       <div class="input-group">
         <label>{{ $t('chat-invite-receiver') }}</label>
-        <input v-model="receiverUsername" placeholder="username" autofocus />
+        <input v-model="receiverUsername" :placeholder="$t('chat-invite-username-placeholder')" autofocus />
       </div>
 
       <label class="checkbox">

@@ -27,13 +27,15 @@ auth-error-email-invalid = Veuillez entrer une adresse email valide
 chat-no-room = Sélectionnez un salon pour commencer à discuter
 chat-input-placeholder = tapez un message
 chat-invite-title = Inviter des gens
-chat-invite-receiver = Nom d'utilisateur
+chat-invite-receiver = Nom du destinataire
 chat-invite-friend-too = Envoyer aussi une demande d'ami
 chat-invite-send = Envoyer
+chat-invite-username-placeholder = nom d'utilisateur
 chat-room-list-title = Salons
 chat-room-owner = par {$owner}
 chat-create-title = Créer un salon
-chat-create-name-placeholder = Nom du salon
+chat-create-name = Nom du salon
+chat-create-name-placeholder = nom du salon
 chat-create-global = Salon public
 chat-create-submit = Créer
 
