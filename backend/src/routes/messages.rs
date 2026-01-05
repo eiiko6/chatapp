@@ -1,6 +1,6 @@
 use axum::{
     Extension, Json, Router,
-    extract::Path,
+    extract::{Path, Query},
     http::{HeaderMap, StatusCode},
     routing::{get, post},
 };
@@ -15,6 +15,7 @@ use crate::{
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
 pub struct MessageRow {
+    pub uuid: Uuid,
     pub sender: String,
     pub message_type: String,
     pub content: String,
@@ -36,6 +37,12 @@ pub struct NewMessagePayload {
     pub content: String,
 }
 
+#[derive(serde::Deserialize)]
+struct MessageFetchQuery {
+    limit: Option<i32>,
+    before: Option<Uuid>,
+}
+
 pub fn routes() -> Router {
     Router::new()
         .route("/messages/{room_uuid}", get(list_messages))
@@ -44,6 +51,7 @@ pub fn routes() -> Router {
 
 async fn list_messages(
     Path(room_uuid): Path<Uuid>,
+    Query(query): Query<MessageFetchQuery>,
     headers: HeaderMap,
     Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Message>>, (StatusCode, String)> {
@@ -59,41 +67,50 @@ async fn list_messages(
         ));
     }
 
+    let limit: i32 = query.limit.unwrap_or(30).abs().min(80);
+
     let messages = sqlx::query_as::<_, MessageRow>(
         r#"
-    SELECT
-        u.username AS sender,
-        r.uuid AS room,
-        m.message_type,
-        m.content,
-        m.sent_at
-    FROM message_ m
-    JOIN user_ u ON u.id = m.sender
-    JOIN room_ r ON r.id = m.room
-    WHERE m.room = $1
-    ORDER BY m.id
-    "#,
+        SELECT
+            m.uuid,
+            u.username AS sender,
+            r.uuid AS room,
+            m.message_type,
+            m.content,
+            m.sent_at
+        FROM message_ m
+        JOIN user_ u ON u.id = m.sender
+        JOIN room_ r ON r.id = m.room
+        WHERE m.room = $1
+        AND ($2::uuid IS NULL OR m.id < (SELECT id FROM message_ WHERE uuid = $2))
+        ORDER BY m.id DESC
+        LIMIT $3
+        "#,
     )
     .bind(room_id)
+    .bind(query.before)
+    .bind(limit)
     .fetch_all(&db)
     .await
-    .map_err(|_| {
+    .map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to list messages".into(),
+            format!("Failed to list messages: {e}"),
         )
     })?;
 
-    let messages: Vec<Message> = messages
+    let mut messages: Vec<Message> = messages
         .into_iter()
         .map(|m| Message {
-            uuid: uuid::Uuid::now_v7(),
+            uuid: m.uuid,
             sender: m.sender,
             message_type: m.message_type,
             content: m.content,
             sent_at: m.sent_at.format("%Y-%m-%d %H:%M:%S").to_string(),
         })
         .collect();
+
+    messages.reverse();
 
     Ok(Json(messages))
 }
@@ -117,14 +134,17 @@ async fn create_message(
         ));
     }
 
+    let uuid = Uuid::now_v7();
+
     let sent_at: chrono::NaiveDateTime = sqlx::query_scalar(
-        "INSERT INTO message_ (sender, room, message_type, content)
-        VALUES ($1, $2, $3, $4) RETURNING sent_at",
+        "INSERT INTO message_ (sender, room, message_type, content, uuid)
+        VALUES ($1, $2, $3, $4, $5) RETURNING sent_at",
     )
     .bind(user_id)
     .bind(room_id)
     .bind(&payload.message_type)
     .bind(&payload.content)
+    .bind(&uuid)
     .fetch_one(&db)
     .await
     .map_err(|_| (StatusCode::BAD_REQUEST, "Could not create message".into()))?;
@@ -132,7 +152,7 @@ async fn create_message(
     let sender_name = username_from_uuid(&db, claims.sub).await?;
 
     let message = Message {
-        uuid: uuid::Uuid::now_v7(),
+        uuid: uuid,
         sender: sender_name,
         message_type: payload.message_type,
         content: payload.content,

@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS room_invite_ (
 
 CREATE TABLE IF NOT EXISTS message_ (
   id BIGSERIAL PRIMARY KEY,
-  -- uuid UUID NOT NULL,
+  uuid UUID NOT NULL,
   sender INT REFERENCES user_(id) NOT NULL,
   room INT REFERENCES room_(id) NOT NULL,
   message_type VARCHAR(32) NOT NULL,

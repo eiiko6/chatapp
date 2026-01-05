@@ -9,7 +9,7 @@
   </div>
 
   <div v-else class="chat-container">
-    <div class="messages-container" ref="messageListRef">
+    <div class="messages-container" ref="messageListRef" @scroll="handleScroll">
       <MessageList :messages="messages" />
     </div>
 
@@ -32,7 +32,6 @@ import { API_WS } from '../main.ts';
 import MessageList from "./MessageList.vue";
 import MessageInput from "./MessageInput.vue";
 import InvitePeopleModal from './InvitePeopleModal.vue';
-
 import WebSocket from '@tauri-apps/plugin-websocket';
 import { getAuthData } from "../authStore.ts";
 import { fetchRoomInfo } from "../api/rooms.ts";
@@ -44,8 +43,10 @@ const messageInputRef = ref<InstanceType<typeof MessageInput> | null>(null);
 const currentUser = ref<User | null>(null);
 const currentRoom = ref<Room | null>(null);
 
+// Pagination State
+const isLoadingMore = ref(false);
+const hasMore = ref(true); // Assume there are more until API returns empty
 const showInviteModal = ref(false);
-
 let socket: WebSocket | null = null;
 
 const isOwner = computed(() => {
@@ -53,32 +54,18 @@ const isOwner = computed(() => {
   return currentUser.value.uuid === currentRoom.value.owner_uuid;
 });
 
-const handleGlobalKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    const active = document.activeElement?.tagName.toLowerCase();
-    const isTyping = active === 'input' || active === 'textarea';
-    if (!isTyping && messageInputRef.value) {
-      event.preventDefault();
-      messageInputRef.value.focus();
-    }
-  }
-};
-
 async function initializeRoom() {
-  if (socket) {
-    await socket.disconnect();
-    socket = null;
-  }
+  if (socket) { await socket.disconnect(); socket = null; }
 
-  // messages.value = [];
+  messages.value = [];
+  hasMore.value = true;
   currentRoom.value = null;
 
   if (props.uuid === 'none') return;
 
   try {
-    // 5. Fetch Room Details and Messages in parallel
     const [msgs, roomInfo, auth] = await Promise.all([
-      fetchMessages(props.uuid),
+      fetchMessages(props.uuid, undefined, 40), // Load first 40
       fetchRoomInfo(props.uuid),
       getAuthData()
     ]);
@@ -86,6 +73,7 @@ async function initializeRoom() {
     messages.value = msgs;
     currentRoom.value = roomInfo;
     currentUser.value = auth.user;
+    if (msgs.length < 40) hasMore.value = false;
 
     await nextTick();
     scrollToBottom();
@@ -99,25 +87,91 @@ async function initializeRoom() {
         const data: Message = JSON.parse(msg.data);
         if (!messages.value.some(m => m.uuid === data.uuid)) {
           messages.value.push(data);
-          nextTick().then(scrollToBottom);
+          nextTick().then(scrollToBottomIfAtEnd);
         }
       }
     });
-
   } catch (err) {
     console.error("Room initialization failed:", err);
   }
 }
 
-async function onSend(content: string) {
-  if (props.uuid === 'none') return;
-  await sendMessage(props.uuid, content);
+async function handleScroll() {
+  const el = messageListRef.value;
+  if (!el) return;
+
+  // If user scrolls to the top, is not already loading, and there's more data
+  if (el.scrollTop < 50 && !isLoadingMore.value && hasMore.value) {
+    await loadMore();
+  }
+}
+
+async function loadMore() {
+  if (messages.value.length === 0) return;
+
+  isLoadingMore.value = true;
+  const oldestMsgUuid = messages.value[0].uuid;
+
+  try {
+    const olderMsgs = await fetchMessages(props.uuid, oldestMsgUuid, 30);
+
+    if (olderMsgs.length === 0) {
+      hasMore.value = false;
+      return;
+    }
+
+    // Capture height before adding messages to maintain scroll position
+    const el = messageListRef.value;
+    const previousScrollHeight = el?.scrollHeight || 0;
+
+    messages.value = [...olderMsgs, ...messages.value];
+
+    await nextTick();
+
+    // Restore scroll position so the view doesn't jump
+    if (el) {
+      el.scrollTop = el.scrollHeight - previousScrollHeight;
+    }
+
+    if (olderMsgs.length < 30) hasMore.value = false;
+  } catch (err) {
+    console.error("Failed to load more messages:", err);
+  } finally {
+    isLoadingMore.value = false;
+  }
 }
 
 function scrollToBottom() {
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
+}
+
+// Only scroll to bottom for new messages if the user is already near the bottom
+function scrollToBottomIfAtEnd() {
+  const el = messageListRef.value;
+  if (!el) return;
+  const threshold = 150;
+  const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  if (isAtBottom) scrollToBottom();
+}
+
+
+
+const handleGlobalKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    const active = document.activeElement?.tagName.toLowerCase();
+    const isTyping = active === 'input' || active === 'textarea';
+    if (!isTyping && messageInputRef.value) {
+      event.preventDefault();
+      messageInputRef.value.focus();
+    }
+  }
+};
+
+async function onSend(content: string) {
+  if (props.uuid === 'none') return;
+  await sendMessage(props.uuid, content);
 }
 
 watch(() => props.uuid, () => {
@@ -148,6 +202,7 @@ onUnmounted(async () => {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  scroll-behavior: auto;
 }
 
 .input-container {
@@ -161,6 +216,13 @@ onUnmounted(async () => {
 /* Ensure the MessageInput component expands to fill the width */
 :deep(.input-container > *:last-child) {
   flex: 1;
+}
+
+.loading-more {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .invite-btn {

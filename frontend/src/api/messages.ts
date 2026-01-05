@@ -1,8 +1,12 @@
 import { apiFetch } from './client'
 import type { Message } from '../types'
 
-export function fetchMessages(roomUuid: string) {
-  return apiFetch<Message[]>(`/messages/${roomUuid}`)
+export function fetchMessages(roomUuid: string, before?: string, limit: number = 30) {
+  let url = `/messages/${roomUuid}?limit=${limit}`;
+  if (before) {
+    url += `&before=${before}`;
+  }
+  return apiFetch<Message[]>(url);
 }
 
 export function sendMessage(roomUuid: string, content: string) {

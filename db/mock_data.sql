@@ -14,13 +14,13 @@ INSERT INTO membership_ (user_id, room) VALUES
 (3, 1),  -- Carol in General Discussion
 (1, 3);  -- Alice in Random Memes
 
-INSERT INTO message_ (sender, room, message_type, content) VALUES
-(1, 1, 'text', 'Hey everyone, hows it going?'),
-(2, 1, 'text', 'All good! Just trying to get through some work.'),
-(3, 1, 'text', 'Hello! How are you guys?'),
-(2, 2, 'text', 'Anyone seen the new tech updates?'),
-(1, 3, 'image', 'Heres a funny meme I found!'),
-(3, 1, 'text', 'I love how active this room is!');
+INSERT INTO message_ (sender, room, message_type, content, uuid) VALUES
+(1, 1, 'text', 'Hey everyone, hows it going?', '3ae85002-8a82-479f-b1c9-6faa3dceb2f3'),
+(2, 1, 'text', 'All good! Just trying to get through some work.', '8e60aa27-9eef-4f1c-a913-47ac6ea1229b'),
+(3, 1, 'text', 'Hello! How are you guys?', 'f2b688f8-6678-465c-8092-9636a9ae2f16'),
+(2, 2, 'text', 'Anyone seen the new tech updates?', '20c6b5d4-c8b1-4afe-844c-339e128fc344'),
+(1, 3, 'image', 'Heres a funny meme I found!', '7dd79706-9187-47a5-b4f0-86e07cbb4564'),
+(3, 1, 'text', 'I love how active this room is!', '9024823f-1b0c-436b-b81d-08dc06ac34df');
 
 INSERT INTO friendship_ (user_first, user_second) VALUES
 (1, 3),  -- Alice and Carol
