@@ -24,9 +24,7 @@ export async function saveAuthData(token: string, user: User) {
 
 export async function clearAuthData() {
   const s = await getStore()
-  await s.delete('token')
-  await s.delete('user')
-  await s.delete('last_room_uuid')
+  s.clear()
   await s.save()
 }
 
